@@ -2865,7 +2865,7 @@
           
           const getProgressStats = () => {
             const total = searchedVerbs.length;
-            // "Bearbeitet" = alle Verben die mindestens 1x bewertet wurden
+            // "Heute geschafft" = alle Verben die mindestens 1x bewertet wurden (in dieser Session)
             const bearbeitet = Object.keys(progress).filter(k => 
               searchedVerbs.some(v => v.infinitive === k)
             ).length;
@@ -3248,7 +3248,7 @@
                   <div className="grid grid-cols-4 gap-4 text-center">
                     <div>
                       <div className="text-2xl font-bold text-gray-800">{stats.bearbeitet}/{stats.total}</div>
-                      <div className="text-sm text-gray-600">Bearbeitet</div>
+                      <div className="text-sm text-gray-600">Heute geschafft</div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-green-600">{stats.good}</div>
