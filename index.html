@@ -1,0 +1,3514 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerbMeister Beta-11.5 Mobile</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><defs><linearGradient id=%22bg%22 x1=%220%25%22 y1=%220%25%22 x2=%220%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%233A7BD5%22/><stop offset=%22100%25%22 style=%22stop-color:%232C5F8D%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23bg)%22 rx=%2220%22/><rect x=%2235%22 y=%22145%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.25%22 rx=%222%22/><rect x=%2258%22 y=%22122%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.4%22 rx=%222%22/><rect x=%2281%22 y=%2299%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.55%22 rx=%222%22/><rect x=%22104%22 y=%2276%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.7%22 rx=%222%22/><rect x=%22127%22 y=%2253%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.85%22 rx=%222%22/><text x=%22100%22 y=%22170%22 font-family=%22Arial%22 font-size=%2272%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 opacity=%220.95%22>V</text></svg>" type="image/svg+xml">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flip-card {
+            perspective: 1000px;
+            min-height: 400px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        @keyframes popup-bounce {
+            0%, 100% { transform: translate(-50%, 0) scale(1); }
+            50% { transform: translate(-50%, -10px) scale(1.05); }
+        }
+        .popup-animate {
+            animation: popup-bounce 0.5s ease-in-out;
+        }
+        
+        /* CRITICAL: Responsive Design für Smartphones */
+        @media (max-width: 767px) {
+            body {
+                padding-bottom: 140px !important;
+            }
+            
+            .flip-card {
+                max-height: calc(100vh - 240px) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            .flip-card-back {
+                overflow-y: auto !important;
+                max-height: calc(100vh - 240px) !important;
+                padding-bottom: 12px !important;
+            }
+            
+            .flip-card-front h2 {
+                font-size: clamp(2.5rem, 10vw, 3.75rem) !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            div.mt-6:has(button.bg-green-500) {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                margin: 0 !important;
+                padding: 10px !important;
+                background: white !important;
+                box-shadow: 0 -4px 16px rgba(0,0,0,0.2) !important;
+                z-index: 1000 !important;
+                border-top: 2px solid #e5e7eb !important;
+            }
+            
+            button.bg-green-500,
+            button.bg-yellow-500,
+            button.bg-red-500 {
+                min-height: 36px !important;
+                font-size: 11px !important;
+                padding: 6px 4px !important; line-height: 1.2 !important;
+            }
+        }
+        
+        @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+            .flip-card-back > div {
+                font-size: 0.9em !important;
+            }
+        }
+
+        
+        @media (max-width: 767px) and (orientation: landscape) {
+            .flip-card {
+                max-height: calc(100vh - 220px) !important;
+            }
+            .flip-card-back {
+                max-height: calc(100vh - 220px) !important;
+                font-size: 11px !important;
+                padding: 8px !important;
+            }
+            button.bg-green-500,
+            button.bg-yellow-500,
+            button.bg-red-500 {
+                min-height: 32px !important;
+                font-size: 10px !important;
+                padding: 4px 2px !important;
+                line-height: 1.1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const VERBS_DATA = [
+          {
+                    "infinitive": "beginnen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es beginnt – begann – hat begonnen",
+                    "imperativ": "",
+                    "bedeutung": "anfangen, den Anfang machen",
+                    "ergaenzungen": "etwas (Akk.); mit etwas (Dat.)",
+                    "beispiele": "Ich beginne den Deutschkurs nächste Woche. / Gestern haben wir mit dem Projekt begonnen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bleiben",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es bleibt – blieb – ist geblieben",
+                    "imperativ": "",
+                    "bedeutung": "an einem Ort verweilen, nicht weggehen",
+                    "ergaenzungen": "wo? (Dat.), bei wem? (Dat.)",
+                    "beispiele": "Bleibst du heute zu Hause? / Ich bin gestern bei meiner Freundin geblieben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bringen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es bringt – brachte – hat gebracht",
+                    "imperativ": "",
+                    "bedeutung": "etwas oder jemanden zu einem Ort transportieren oder begleiten",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.) bringen; jemanden (Akk.) [wohin] bringen",
+                    "beispiele": "Bringst du mir bitte das Buch? / Er brachte sein Kind immer zur Schule.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "denken",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es denkt – dachte – hat gedacht",
+                    "imperativ": "",
+                    "bedeutung": "Gedanken haben, überlegen, nachdenken",
+                    "ergaenzungen": "an jemanden/etwas (Akk.)",
+                    "beispiele": "Woran denkst du gerade? / Ich habe an unsere letzte Reise gedacht.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "dürfen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es darf – durfte – (1) hat gedurft / (2) hat dürfen",
+                    "imperativ": "",
+                    "bedeutung": "(1) etwas mit Erlaubnis tun; (2) die Erlaubnis haben, etwas zu tun",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) Modalverb + Infinitiv",
+                    "beispiele": "(1) Darf ich hier fotografieren? / Gestern durften wir früher nach Hause gehen. / (2) Das hättest du nicht tun dürfen!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "essen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es isst – aß – hat gegessen",
+                    "imperativ": " iss!",
+                    "bedeutung": "Nahrung zu sich nehmen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Was hast du zum Frühstück gegessen? / Iss langsam! / Im Urlaub aßen wir viel Pizza.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fahren",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es fährt – fuhr – (1) ist gefahren / (2) hat gefahren",
+                    "imperativ": "",
+                    "bedeutung": "(1) sich mit einem Fahrzeug fortbewegen / (2) etwas oder jemanden mit einem Fahrzeug transportieren",
+                    "ergaenzungen": "(1) wohin / womit fahren; (2) selbst oder jemanden (Akk.)",
+                    "beispiele": "(1) Letztes Jahr bin ich mit Freunden nach Berlin gefahren. / (2) Sie hat ihr Kind [mit dem Auto] in die Schule gefahren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fangen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es fängt – fing – hat gefangen",
+                    "imperativ": "",
+                    "bedeutung": "etwas Bewegliches greifen und festhalten",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Die Kinder fingen Schmetterlinge. / Hast du den Ball gefangen?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "finden",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es findet – fand – hat gefunden",
+                    "imperativ": "",
+                    "bedeutung": "(1) etwas Gesuchtes entdecken; (2) etwas einschätzen, bewerten",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "(1) Hast du deinen Schlüssel gefunden? / (2) Den Film fand ich nicht schlecht.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fliegen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es fliegt – flog – ist geflogen",
+                    "imperativ": "",
+                    "bedeutung": "sich durch die Luft bewegen",
+                    "ergaenzungen": "wo?, wohin?, woher?",
+                    "beispiele": "Wir fliegen nächste Woche nach Spanien. / Der Vogel ist über das Haus geflogen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "geben",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es gibt – gab – hat gegeben",
+                    "imperativ": " gib!",
+                    "bedeutung": "überreichen, schenken",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.) geben",
+                    "beispiele": "Gib mir bitte das Salz! / Die Eltern haben ihrer Tochter einen Namen gegeben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gehen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es geht – ging – ist gegangen",
+                    "imperativ": "",
+                    "bedeutung": "(1) sich zu Fuß fortbewegen; (2) funktionieren",
+                    "ergaenzungen": "(1) intransitiv, wo?, wohin?; (2) intransitiv, kein Objekt",
+                    "beispiele": "(1) Ihr seid gestern ins Kino gegangen. / (2) Plötzlich ging das Licht nicht mehr.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "haben",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es hat – hatte – hat gehabt",
+                    "imperativ": "",
+                    "bedeutung": "(1) besitzen, sein Eigen nennen; (2) Hilfsverb für die Bildung des Perfekts und Plusquamperfekts bei den meisten Verben",
+                    "ergaenzungen": "(1) etwas (Akk.); (2) haben + Partizip II",
+                    "beispiele": "(1) Hast du ein Auto? / (2) Ich habe schon viele neue Wörter gelernt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "heißen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es heißt – hieß – hat geheißen",
+                    "imperativ": "",
+                    "bedeutung": "einen bestimmten Namen tragen",
+                    "ergaenzungen": "Name oder Personalpronomen (Nominativ, ohne Artikel)",
+                    "beispiele": "Wie heißt du? / Mein Großvater hieß Karl.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "helfen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es hilft – half – hat geholfen",
+                    "imperativ": " hilf!",
+                    "bedeutung": "Unterstützung geben, unterstützen",
+                    "ergaenzungen": "jemandem (Dat.) helfen",
+                    "beispiele": "Kannst du mir helfen? / Hilf mir bitte! / Gestern hat sie ihrer Nachbarin geholfen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "kennen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es kennt – kannte – hat gekannt",
+                    "imperativ": "",
+                    "bedeutung": "vertraut sein mit",
+                    "ergaenzungen": "jemanden/etwas (Akk.) kennen",
+                    "beispiele": "Kanntest du diesen Mann? / Ich habe sie schon als Kind gekannt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "kommen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es kommt – kam – ist gekommen",
+                    "imperativ": "",
+                    "bedeutung": "sich nähern, ankommen, herkommen",
+                    "ergaenzungen": "woher?, wohin?",
+                    "beispiele": "Sie ist gestern aus Italien gekommen. / Kommt ihr auch ins Kino?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "können",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es kann – konnte – (1) hat gekonnt / (2) hat können",
+                    "imperativ": "",
+                    "bedeutung": "(1) etwas können; (2) die Fähigkeit haben, etwas zu tun",
+                    "ergaenzungen": "(1) etwas (Akk.); (2) Modalverb + Infinitiv",
+                    "beispiele": "(1) Früher habe ich noch nicht so gut Deutsch gekonnt. / (2) Wir konnten leider nicht kommen. / Der Arzt hat ihr helfen können.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "lesen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es liest – las – hat gelesen",
+                    "imperativ": " lies!",
+                    "bedeutung": "geschriebenen Text verstehen und aufnehmen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Was liest du gerade? / Lies mir bitte den Text vor. / Ich habe dieses Buch schon gelesen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "mögen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es mag – mochte – hat gemocht",
+                    "imperativ": "",
+                    "bedeutung": "gerne haben, sympathisch finden, haben wollen",
+                    "ergaenzungen": "(1) jemanden/etwas (Akk.); (2) Modalverb + Infinitiv",
+                    "beispiele": "(1) Magst du Pizza? / Als Kind mochte ich kein Gemüse. / (2) Ich möchte [= Konj. II] das lernen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "müssen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es muss – musste – (1) hat gemusst / (2) hat müssen",
+                    "imperativ": "",
+                    "bedeutung": "(1) zu etwas gezwungen sein; (2) gezwungen sein, etwas zu tun",
+                    "ergaenzungen": "(1) intransitiv; (2) Modalverb + Infinitiv",
+                    "beispiele": "(1) Du musst morgen früh zur Arbeit. / Ich wollte nicht, aber ich habe in die Schule gemusst. / (2) Gestern habe ich in die Schule gehen müssen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "nehmen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es nimmt – nahm – hat genommen",
+                    "imperativ": " nimm!",
+                    "bedeutung": "(1) mit der Hand greifen, zu sich nehmen; (2) benutzen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "(1) Nimmst du Zucker in den Kaffee? / Bitte nimm den Hund an die Leine! / (2) Sie hat den Bus genommen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "rufen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es ruft – rief – hat gerufen",
+                    "imperativ": "",
+                    "bedeutung": "mit lauter Stimme sprechen, verlangen",
+                    "ergaenzungen": "jemanden (Akk.) / nach jemandem (Dat.)",
+                    "beispiele": "Hast du mich gerufen? / Die Eltern riefen nach ihren Kindern.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schlafen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es schläft – schlief – hat geschlafen",
+                    "imperativ": "",
+                    "bedeutung": "in Schlafzustand sein, ruhen",
+                    "ergaenzungen": "Intransitiv, kein Objekt; wie?, wo?, wie lange?",
+                    "beispiele": "Schläfst du schon? / In meinem neuen Bett habe ich gut geschlafen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schreiben",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es schreibt – schrieb – hat geschrieben",
+                    "imperativ": "",
+                    "bedeutung": "Schriftzeichen auf Papier/Bildschirm produzieren",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Schreibst du mir eine E-Mail? / Er hat ihr einen Brief geschrieben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schwimmen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es schwimmt – schwamm – ist geschwommen",
+                    "imperativ": "",
+                    "bedeutung": "sich im Wasser fortbewegen; nicht untergehen, treiben",
+                    "ergaenzungen": "wo?, wohin?",
+                    "beispiele": "Schwimmst du gerne? / Wir sind im See bis zur Insel geschwommen. / Auf Wasser schwamm ein Ast.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sehen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es sieht – sah – hat gesehen",
+                    "imperativ": " sieh!",
+                    "bedeutung": "mit den Augen wahrnehmen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Siehst du den Stern? / Sieh genau hin! / Ich habe gestern einen guten Film gesehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sein",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es ist – war – ist gewesen",
+                    "imperativ": "",
+                    "bedeutung": "(1) existieren, sich in einem Zustand befinden / (2) Hilfsverb für die Bildung des Perfekts und Plusquamperfekts bei Verben der Bewegung / Veränderung / (3) Hilfsverb bei der Bildung der Passivformen der Vergangenheit und Zukunft",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "(1) Wo bist du? / Vorgestern waren wir im Museum. / (2) Er ist früh ins Bett gegangen. / (3) Das Auto ist repariert worden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "singen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es singt – sang – hat gesungen",
+                    "imperativ": "",
+                    "bedeutung": "mit der Stimme Klänge (Musik) machen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Singst du gerne? / Sie haben ein Lied gesungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sollen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es soll – sollte – (1) hat gesollt / (2) hat sollen",
+                    "imperativ": "",
+                    "bedeutung": "eine Pflicht haben",
+                    "ergaenzungen": "(1) etwas (Akk.); (2) Modalverb + Infinitiv",
+                    "beispiele": "(1) Das hatte er gesollt, aber nicht gekonnt. / (2) Du solltest mehr Wasser trinken. / Du hast doch aufräumen sollen!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sprechen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es spricht – sprach – hat gesprochen",
+                    "imperativ": " sprich!",
+                    "bedeutung": "mündlich kommunizieren, reden",
+                    "ergaenzungen": "mit jemandem (Dat.) über etwas (Akk.)",
+                    "beispiele": "Sprich bitte mit mir! / Sprichst du Deutsch? / Er hat mit seinem Gast über das Wetter gesprochen. / Sprechen Sie bitte langsamer!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "stehen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es steht – stand – hat gestanden",
+                    "imperativ": "",
+                    "bedeutung": "auf den Füßen sein, nicht sitzen oder liegen",
+                    "ergaenzungen": "wo? (Dat.)",
+                    "beispiele": "Warum stehst du? / Ich habe lange an der Bushaltestelle gestanden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "treffen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es trifft – traf – hat getroffen",
+                    "imperativ": " triff!",
+                    "bedeutung": "(1) mit jemandem zusammenkommen; (2) mit einem Instrument [einer Waffe] in ein Ziel einschlagen",
+                    "ergaenzungen": "(1) jemanden (Akk.); sich mit jemandem (Dat.) treffen / (2) jemanden, etwas (Akk.) treffen",
+                    "beispiele": "(1) Gestern habe ich zufällig einen alten Freund getroffen. / Treffen wir uns morgen vor dem Kino? / (2) Der Pfeil traf die Mitte der Zielscheibe.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "trinken",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es trinkt – trank – hat getrunken",
+                    "imperativ": "",
+                    "bedeutung": "Flüssigkeit zu sich nehmen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Was trinkst du? / Er hat zu viel Kaffee getrunken.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "tun",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es tut – tat – hat getan",
+                    "imperativ": "",
+                    "bedeutung": "eine Handlung ausführen, machen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Warum tust du nichts? / Ich habe doch alles getan, was ich tun sollte.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "wissen",
+                    "level": "A1",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es weiß – wusste – hat gewusst",
+                    "imperativ": "",
+                    "bedeutung": "Kenntnis von etwas haben",
+                    "ergaenzungen": "etwas (Akk.) / von etwas (Dat.)",
+                    "beispiele": "Weißt du die Antwort? / Ich habe es nicht gewusst. / Davon wussten wir nichts.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "backen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es bäckt/backt – buk/backte – hat gebacken",
+                    "imperativ": "",
+                    "bedeutung": "Teig im Ofen zu Gebäck machen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Du backst so guten Kuchen! / Meine Oma hat früher noch Brot gebacken.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "biegen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es biegt – bog – hat gebogen",
+                    "imperativ": "",
+                    "bedeutung": "krümmen, eine Kurve machen",
+                    "ergaenzungen": "etwas (Akk.), um etwas (Akk.)",
+                    "beispiele": "Er hat den Draht gebogen. / Der Hund bog um die Ecke.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bieten",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es bietet – bot – hat geboten",
+                    "imperativ": "",
+                    "bedeutung": "zur Verfügung stellen, anbieten",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Die Firma bietet ihren Mitarbeiter*innen gute Löhne. / Für das Handy haben sie auf Ebay 100 € geboten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bitten",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es bittet – bat – hat gebeten",
+                    "imperativ": "",
+                    "bedeutung": "ersuchen, höflich verlangen",
+                    "ergaenzungen": "jemanden (Akk.) um etwas (Akk.)",
+                    "beispiele": "Ich bitte dich um einen Gefallen. / Er hat mich um Hilfe gebeten.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen (religiösen) Verb \"beten\" (betet, betete, hat gebetet)!"
+          },
+          {
+                    "infinitive": "braten",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es brät – briet – hat gebraten",
+                    "imperativ": "",
+                    "bedeutung": "in Fett bei hoher Hitze garen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Der Koch briet das Steak in der Pfanne. / Wir haben Paprika gebraten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fallen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es fällt – fiel – ist gefallen",
+                    "imperativ": "",
+                    "bedeutung": "von oben nach unten bewegen (durch Schwerkraft)",
+                    "ergaenzungen": "wohin?, wo?",
+                    "beispiele": "Pass auf, dass du nicht fällst! / Der Apfel ist vom Baum in den Korb gefallen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gefallen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es gefällt – gefiel – hat gefallen",
+                    "imperativ": "",
+                    "bedeutung": "dem Geschmack entsprechen",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Nom.)",
+                    "beispiele": "Gefällt dir das Kleid? / Das Konzert hat uns gut gefallen. / Du gefällst mir.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gewinnen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es gewinnt – gewann – hat gewonnen",
+                    "imperativ": "",
+                    "bedeutung": "als Sieger aus etwas hervorgehen; einen Preis erhalten",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Wer gewinnt das Spiel? / Unsere Mannschaft hat den Pokal gewonnen!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "laden",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es lädt – lud – hat geladen",
+                    "imperativ": "",
+                    "bedeutung": "(1) Waren/Dinge in ein Fahrzeug bringen; (2) Energie aufnehmen",
+                    "ergaenzungen": "(1) etwas (Akk.) in/auf etwas (Akk.) / (2) etwas (Akk.)",
+                    "beispiele": "(1) Wir laden die Koffer ins Auto. / (2) Hast du dein Handy geladen?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "laufen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es läuft – lief – ist gelaufen",
+                    "imperativ": "",
+                    "bedeutung": "sich (schnell) zu Fuß fortbewegen",
+                    "ergaenzungen": "wo?, wohin?",
+                    "beispiele": "Die Kinder laufen im Park. / Er ist sehr schnell gelaufen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "liegen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es liegt – lag – hat gelegen [süddeutsch auch: ist gelegen]",
+                    "imperativ": "",
+                    "bedeutung": "in waagerechter Position sein",
+                    "ergaenzungen": "wo? (Dat.)",
+                    "beispiele": "Die Stifte lagen auf dem Tisch. / Er hat [ist] im Bett gelegen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "nennen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es nennt – nannte – hat genannt",
+                    "imperativ": "",
+                    "bedeutung": "einen Namen geben, bezeichnen",
+                    "ergaenzungen": "jemanden/etwas (Akk.) + Name",
+                    "beispiele": "Wie nennen wir das Kind? / Sie haben ihre Tochter Anna genannt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "rennen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es rennt – rannte – ist gerannt",
+                    "imperativ": "",
+                    "bedeutung": "sehr schnell laufen",
+                    "ergaenzungen": "wo?, wohin?",
+                    "beispiele": "Die Kinder rannten zur Schule. / Warum bist du so schnell gerannt?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "riechen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es riecht – roch – hat gerochen",
+                    "imperativ": "",
+                    "bedeutung": "(1) mit der Nase wahrnehmen; (2) einen Geruch haben",
+                    "ergaenzungen": "(1) etwas (Akk.); an etwas (Dat.) / (2) nach etwas (Dat.)",
+                    "beispiele": "(1) Vorsicht, hier rieche ich Rauch! / (2) Rosen riechen gut. / (1 + 2) Ich habe am Parfüm gerochen, es roch nach Veilchen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schließen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es schließt – schloss – hat geschlossen",
+                    "imperativ": "",
+                    "bedeutung": "zumachen, nicht mehr offen sein",
+                    "ergaenzungen": "etwas (Akk.) schließen",
+                    "beispiele": "Schließt bitte die Tür! / Das Geschäft hat um 18 Uhr geschlossen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sitzen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es sitzt – saß – (1) hat gesessen / (2) ist gesessen",
+                    "imperativ": "",
+                    "bedeutung": "(1) auf einer Sitzgelegenheit hocken / (2) eingesperrt sein",
+                    "ergaenzungen": "(1) auf etwas (Dat.); (2) wo?",
+                    "beispiele": "(1) Wo saßt ihr? / Wir haben im Garten gesessen. / (2) Warum bist du im Gefängnis gesessen?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "steigen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es steigt – stieg – ist gestiegen",
+                    "imperativ": "",
+                    "bedeutung": "sich nach oben bewegen, klettern",
+                    "ergaenzungen": "wohin?, auf etwas",
+                    "beispiele": "Die Preise sind gestiegen. / Er stieg auf die Leiter.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sterben",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es stirbt – starb – ist gestorben",
+                    "imperativ": " stirb!",
+                    "bedeutung": "aufhören zu leben, auf den Tod zugehen",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Viele Fische starben bereits wegen der Verschmutzung des Meeres. / Herr Müller ist vor zwei Jahren gestorben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "treiben",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es treibt – trieb – (1) hat getrieben / (2) ist getrieben",
+                    "imperativ": "",
+                    "bedeutung": "eine Person oder Sache dazu bringen, sich in eine bestimmte Richtung zu bewegen",
+                    "ergaenzungen": "(1) jemanden, ein Tier, etwas (Akk.) wohin treiben; (2) wo?, wohin?",
+                    "beispiele": "(1) Die Kühe wurden auf die Weide getrieben. / (2) Das Boot trieb aufs Meer. / Auf dem Fluss ist ein Ast getrieben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "vergessen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es vergisst – vergaß – hat vergessen",
+                    "imperativ": " vergiss!",
+                    "bedeutung": "sich nicht mehr erinnern können",
+                    "ergaenzungen": "jemanden/etwas (Akk.) vergessen",
+                    "beispiele": "Vergiss deine Hausaufgaben nicht! / Ich habe leider deinen Namen vergessen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "verlieren",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es verliert – verlor – hat verloren",
+                    "imperativ": "",
+                    "bedeutung": "(1) etwas nicht mehr haben oder finden; (2) nicht gewinnen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "(1) Verlierst du oft deine Schlüssel? / (2) Unser Team hat verloren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "wachsen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es wächst – wuchs – ist gewachsen",
+                    "imperativ": "",
+                    "bedeutung": "größer werden",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Unsere Tochter wächst schnell. / Die Pflanzen sind gut gewachsen.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"wachsen\": Wachs auf eine Fläche auftragen (wachst, wachste, hat gewachst)!"
+          },
+          {
+                    "infinitive": "waschen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es wäscht – wusch – hat gewaschen",
+                    "imperativ": "",
+                    "bedeutung": "mit Wasser und Waschmittel säubern",
+                    "ergaenzungen": "jemanden/etwas (Akk.) waschen",
+                    "beispiele": "Wäschst du das Auto selbst? / Ich habe meine Hände gewaschen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "werden",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es wird – wurde – ist geworden",
+                    "imperativ": "",
+                    "bedeutung": "(1) sich zu etwas entwickeln / (2) Hilfsverb für die Bildung des Futurs I und II / (3) Hilfsverb bei der Bildung aller Formen des Passivs",
+                    "ergaenzungen": "(1) werden + Nomen oder Adjektiv (Nom.); (2) werden + Infinitiv; (3) werden + Partizip II",
+                    "beispiele": "(1) Er wird Lehrer. / Es ist kalt geworden. / (2) Wir werden uns morgen wiedersehen. / (3) Gestern wurde die Straße gesperrt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "werfen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es wirft – warf – hat geworfen",
+                    "imperativ": " wirf!",
+                    "bedeutung": "etwas mit Schwung durch die Luft fliegen lassen",
+                    "ergaenzungen": "etwas (Akk.) [wohin] werfen",
+                    "beispiele": "Wirf den Ball zu mir! / Er hat den Stein ins Wasser geworfen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "ziehen",
+                    "level": "A2",
+                    "category": 1,
+                    "categoryName": "Basis (A1-A2)",
+                    "forms": "er/sie/es zieht – zog – hat gezogen",
+                    "imperativ": "",
+                    "bedeutung": "mit Kraft etwas hinter sich her bewegen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Sie zog den Koffer. / Bevor es Autos gab, haben Pferde die Kutschen gezogen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "befehlen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es befiehlt – befahl – hat befohlen",
+                    "imperativ": "",
+                    "bedeutung": "mit Autorität anordnen, einen Befehl geben",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Die Chefin befahl uns zu warten. / Der General hat den Rückzug befohlen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "beißen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es beißt – biss – hat gebissen",
+                    "imperativ": "",
+                    "bedeutung": "mit den Zähnen zupacken",
+                    "ergaenzungen": "jemanden/etwas (Akk.); in etwas (Akk.); auf etwas (Akk.)",
+                    "beispiele": "Der Hund beißt nicht. / Die Mücke hat mich gebissen. / Max biss in seinen Hamburger.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "binden",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es bindet – band – hat gebunden",
+                    "imperativ": "",
+                    "bedeutung": "mit einem Band, einer Schnur zusammenhalten",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Sie band ihre Schuhe. / Er hat eine Schleife gebunden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "brechen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es bricht – brach – (1) hat gebrochen / (2) ist gebrochen",
+                    "imperativ": "",
+                    "bedeutung": "in Stücke teilen, zerbrechen",
+                    "ergaenzungen": "(1) etwas (Akk.); (2) entzweigehen",
+                    "beispiele": "(1) Max hat sich das Bein gebrochen. / (2) Die Äste sind unter der Schneelast gebrochen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "brennen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es brennt – brannte – hat gebrannt",
+                    "imperativ": "",
+                    "bedeutung": "in Flammen stehen",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Das Haus brennt! / Das Feuer hat die ganze Nacht gebrannt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "empfehlen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es empfiehlt – empfahl – hat empfohlen",
+                    "imperativ": "",
+                    "bedeutung": "einen Rat geben, Vorschlag machen",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Welches Restaurant empfiehlst du? / Der Arzt hat mir diese Medizin empfohlen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "erschrecken",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es erschrickt – erschrak – ist erschrocken",
+                    "imperativ": "",
+                    "bedeutung": "plötzlich Angst bekommen",
+                    "ergaenzungen": "vor jemandem, vor etwas",
+                    "beispiele": "Erschrick nicht! / Ich bin vor dem lauten Geräusch erschrocken.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"erschrecken\": jemand anderen erschrecken (er erschreckt ihn, er erschreckte ihn, er hat ihn erschreckt)!"
+          },
+          {
+                    "infinitive": "fliehen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es flieht – floh – ist geflohen",
+                    "imperativ": "",
+                    "bedeutung": "schnell weglaufen, entkommen",
+                    "ergaenzungen": "wohin? (Akk.), vor jemandem/etwas (Dat.)",
+                    "beispiele": "Der Dieb flieht. / Viele Menschen sind vor dem Krieg in ihrer Heimat geflohen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fließen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es fließt – floss – ist geflossen",
+                    "imperativ": "",
+                    "bedeutung": "(von Flüssigkeit) sich fortbewegen",
+                    "ergaenzungen": "wo?, wohin?, woher?",
+                    "beispiele": "Dieser Fluss fließt von West nach Ost. / Viel Wasser ist ins Meer geflossen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fressen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es frisst – fraß – hat gefressen",
+                    "imperativ": " friss!",
+                    "bedeutung": "(von Tieren) essen; (von Menschen) gierig und viel essen [ugs.]",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Unsere Katze jagte Mäuse, aber fraß sie nicht. / Der Hund hat alles gefressen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "frieren",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es friert – fror – hat gefroren",
+                    "imperativ": "",
+                    "bedeutung": "Kälte empfinden",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Wir froren oft beim Schlittenfahren. / Der Obdachlose hat in dieser Nacht sehr gefroren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gelingen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gelingt – gelang – ist gelungen",
+                    "imperativ": "",
+                    "bedeutung": "Erfolg haben, gut funktionieren",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Ich hoffe, die Prüfung gelingt mir! / Euch ist das Experiment gelungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gelten",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gilt – galt – hat gegolten",
+                    "imperativ": "",
+                    "bedeutung": "gültig sein, wirksam sein",
+                    "ergaenzungen": "intransitiv; für jemanden (Akk.)",
+                    "beispiele": "Das Ticket hat nicht mehr gegolten. / Diese Regel gilt für alle.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "genießen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es genießt – genoss – hat genossen",
+                    "imperativ": "",
+                    "bedeutung": "mit Vergnügen erleben",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Genießt ihr euren Ruhestand? / Wir haben den Urlaub genossen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "geschehen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es geschieht – geschah – ist geschehen",
+                    "imperativ": "",
+                    "bedeutung": "sich ereignen, passieren",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Was geschieht hier? / Ein Unfall ist geschehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gießen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gießt – goss – hat gegossen",
+                    "imperativ": "",
+                    "bedeutung": "Flüssigkeit aus einem Gefäß schütten",
+                    "ergaenzungen": "etwas (Akk.) / etwas (Akk.) in etwas (Akk.)",
+                    "beispiele": "Gießt du bitte die Blumen? / Sie hat Wasser in die Vase gegossen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gleichen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gleicht – glich – hat geglichen",
+                    "imperativ": "",
+                    "bedeutung": "sehr ähnlich sein",
+                    "ergaenzungen": "jemandem / etwas (Dat.)",
+                    "beispiele": "Das Kind gleicht seinem Vater. / Die Zwillinge glichen sich wie ein Ei dem anderen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "graben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gräbt – grub – hat gegraben",
+                    "imperativ": "",
+                    "bedeutung": "Erde ausheben, ein Loch machen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Der Hund gräbt ein Loch. / Wir haben im Garten gegraben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "greifen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es greift – griff – hat gegriffen",
+                    "imperativ": "",
+                    "bedeutung": "mit der Hand fassen",
+                    "ergaenzungen": "etwas (Akk.) / nach etwas, zu etwas (Dat.)",
+                    "beispiele": "Er griff den Stein und warf ihn. / Das Kind greift nach der Hand der Mutter. / Du hast schnell zum Telefon gegriffen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "halten",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es hält – hielt – hat gehalten",
+                    "imperativ": "",
+                    "bedeutung": "(1) festhalten, nicht loslassen / (2) anhalten",
+                    "ergaenzungen": "(1) jemanden/etwas (Akk.) / (2) wo?",
+                    "beispiele": "Sie hielt seine Hand. / Das Auto hat an der Ampel gehalten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "hängen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es hängt – hing – hat gehangen [süddeutsch auch: ist gehangen]",
+                    "imperativ": "",
+                    "bedeutung": "in der Luft befestigt sein",
+                    "ergaenzungen": "wo? (Dat.), an etwas (Dat.)",
+                    "beispiele": "Das Bild hängt an der Wand. / Mein Mantel hat [ist] am Haken gehangen.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"hängen\" (hängt, hängte, hat gehängt; z.B. \"er hängte ein Bild an die Wand\")!"
+          },
+          {
+                    "infinitive": "heben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es hebt – hob – hat gehoben",
+                    "imperativ": "",
+                    "bedeutung": "nach oben bewegen, hochnehmen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Er hob den Hut zum Gruß. / Sie hat bei der Abstimmung die Hand gehoben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "klingen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es klingt – klang – hat geklungen",
+                    "imperativ": "",
+                    "bedeutung": "einen bestimmten Ton (Klang) haben",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Deine Stimme klingt heiser. / Die Musik hat schön geklungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "lassen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es lässt – ließ – (1) hat gelassen / hat (+ Infinitiv) lassen",
+                    "imperativ": "",
+                    "bedeutung": "(1) zulassen, erlauben / (2) veranlassen",
+                    "ergaenzungen": "(1) jemanden, etwas (Akk.) / (2) jemanden, etwas (Akk.) + Infinitiv",
+                    "beispiele": "(1) Warum hast du mich nicht in Ruhe gelassen? / (2) Ich habe das Auto reparieren lassen / Wir ließen die Hunde laufen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "leiden",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es leidet – litt – hat gelitten",
+                    "imperativ": "",
+                    "bedeutung": "Schmerzen/Probleme haben",
+                    "ergaenzungen": "an/unter etwas (Dat.)",
+                    "beispiele": "Er leidet an Kopfschmerzen. / Sie hat sehr gelitten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "leihen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es leiht – lieh – hat geliehen",
+                    "imperativ": "",
+                    "bedeutung": "vorübergehend abgeben, überlassen",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Leihst du mir dein Buch? / Er hat mir Geld geliehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "lügen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es lügt – log – hat gelogen",
+                    "imperativ": "",
+                    "bedeutung": "die Unwahrheit sagen",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Lüg nicht! / Du hast gelogen!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "meiden",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es meidet – mied – hat gemieden",
+                    "imperativ": "",
+                    "bedeutung": "aus dem Weg gehen, ausweichen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Er meidet große Menschenmengen. / Sie haben den Kontakt gemieden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "messen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es misst – maß – hat gemessen",
+                    "imperativ": " miss!",
+                    "bedeutung": "die Größe / Menge von etwas bestimmen",
+                    "ergaenzungen": "jemanden / etwas (Akk.)",
+                    "beispiele": "Der Arzt misst den Blutdruck. / Hast du die Temperatur gemessen?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "raten",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es rät – riet – hat geraten",
+                    "imperativ": "",
+                    "bedeutung": "(1) einen Rat geben / (2) ein Rätsel lösen",
+                    "ergaenzungen": "(1) jemandem (Dat.) zu etwas (Dat.) / (2) etwas (Akk.)",
+                    "beispiele": "(1) Was rätst du mir? / Sie hat ihm zur Vorsicht geraten. / (2) Er wusste die Antwort nicht, hat aber gut geraten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "reiben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es reibt – rieb – hat gerieben",
+                    "imperativ": "",
+                    "bedeutung": "mit Druck hin und her bewegen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Sie reibt sich die Hände. / Ich habe den Käse gerieben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "reiten",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es reitet – ritt – ist geritten",
+                    "imperativ": "",
+                    "bedeutung": "sich auf einem Pferd sitzend fortbewegen",
+                    "ergaenzungen": "etwas (Akk.); wo?, wohin?",
+                    "beispiele": "Sie reitet einen Schimmel. / Am liebsten reite ich auf dem freien Feld. / Wir sind in den Wald geritten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schaffen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schafft – schuf – hat geschaffen",
+                    "imperativ": "",
+                    "bedeutung": "erschaffen, etwas Neues machen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Der Künstler schuf ein Kunstwerk. / Manche glauben, Gott habe die Welt geschaffen.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"schaffen\" (schafft, schaffte, hat geschafft; z.B. \"eine Arbeit geschafft haben [erledigen]; eine Prüfung geschafft haben [bestehen]\")!"
+          },
+          {
+                    "infinitive": "scheiden",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es scheidet – schied – (1) hat geschieden / (2) ist geschieden",
+                    "imperativ": "",
+                    "bedeutung": "sich trennen, etwas beenden",
+                    "ergaenzungen": "(1) ein Paar scheiden [Gericht], sich scheiden lassen / (2) Abschied nehmen",
+                    "beispiele": "(1) Der Richter hat das Ehepaar geschieden. / Sie haben sich scheiden lassen. / (2) Er ist aus dem Dienst geschieden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "scheinen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es scheint – schien – hat geschienen",
+                    "imperativ": "",
+                    "bedeutung": "(1) Licht geben / (2) den Anschein haben, aussehen als ob",
+                    "ergaenzungen": "(1) – / (2) mit erweitertem Infinitiv / mit Adjektiv",
+                    "beispiele": "(1) Die Sonne schien. / (2) Es scheint nicht mehr zu regnen. / Es scheint schön zu werden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schieben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schiebt – schob – hat geschoben",
+                    "imperativ": "",
+                    "bedeutung": "durch Drücken bewegen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Er schob gerne den Kinderwagen. / Wir haben das Auto geschoben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schießen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schießt – schoss – hat geschossen",
+                    "imperativ": "",
+                    "bedeutung": "mit einem Gegenstand oder Instrument auf ein Objekt zielen",
+                    "ergaenzungen": "etwas (Akk.) / auf jemanden/etwas (Akk.)",
+                    "beispiele": "Sie schoss das entscheidende Tor. / Der Jäger hat auf das Wildschwein geschossen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schlagen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schlägt – schlug – hat geschlagen",
+                    "imperativ": "",
+                    "bedeutung": "(1) mit der Hand, mit einem Gegenstand treffen / (2) im Takt klopfen / (3) besiegen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "(1) Schlag mich nicht! / Er schlug den Ball ins Aus. / (2) Sein Herz hat schnell geschlagen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schmeißen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schmeißt – schmiss – hat geschmissen",
+                    "imperativ": "",
+                    "bedeutung": "(umgangssprachlich für) werfen",
+                    "ergaenzungen": "etwas (Akk.); wohin?",
+                    "beispiele": "Schmeißt eure Taschen nicht auf den Boden! / Er hat den Ball geschmissen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schneiden",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schneidet – schnitt – hat geschnitten",
+                    "imperativ": "",
+                    "bedeutung": "mit einem scharfen Gegenstand teilen",
+                    "ergaenzungen": "jemanden, etwas (Akk.)",
+                    "beispiele": "Sie schneidet das Brot. / Ich habe mich geschnitten!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schreien",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schreit – schrie – hat geschrien",
+                    "imperativ": "",
+                    "bedeutung": "sehr laut rufen",
+                    "ergaenzungen": "nach jemandem (Dat.)",
+                    "beispiele": "Warum schreist du? / Das Baby hat die ganze Nacht nach seiner Mutter geschrien.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "senden",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es sendet – sandte/sendete – hat gesandt/gesendet",
+                    "imperativ": "",
+                    "bedeutung": "schicken, übermitteln",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Ich sende dir eine E-Mail. / Sie hat mir ein Paket gesandt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sinken",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es sinkt – sank – ist gesunken",
+                    "imperativ": "",
+                    "bedeutung": "nach unten gehen, tiefer werden",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Die Titanic sank im Eismeer. / Die Temperaturen sind gesunken.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "springen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es springt – sprang – ist gesprungen",
+                    "imperativ": "",
+                    "bedeutung": "(1) sich mit einem Sprung durch die Luft bewegen, hüpfen; (2) bersten, entzwei gehen",
+                    "ergaenzungen": "(1) wo?, wohin? / (2) –",
+                    "beispiele": "(1) Die Kinder springen vor Freude. / Wir sind ins Wasser gesprungen. / (2) Das Glas ist gesprungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "stehlen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es stiehlt – stahl – hat gestohlen",
+                    "imperativ": "stiehl!",
+                    "bedeutung": "nehmen, was einem nicht gehört",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Jemand stahl mir mein Fahrrad! / Der Dieb hat Geld gestohlen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "stinken",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es stinkt – stank – hat gestunken",
+                    "imperativ": "",
+                    "bedeutung": "einen unangenehmen Geruch haben",
+                    "ergaenzungen": "nach etwas (Dat.)",
+                    "beispiele": "Hier stinkt es nach Benzin! / Der Müll hat gestunken.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "streiten",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es streitet – stritt – hat gestritten",
+                    "imperativ": "",
+                    "bedeutung": "eine Auseinandersetzung haben",
+                    "ergaenzungen": "mit jemandem (Dat.) über etwas (Akk.) / sich streiten",
+                    "beispiele": "Streitet nicht! / Sie haben sich über Politik gestritten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "tragen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es trägt – trug – hat getragen",
+                    "imperativ": "",
+                    "bedeutung": "etwas bei sich haben, transportieren",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Trägst du mir bitte die Tasche? / Sie trug ein rotes Kleid.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "treten",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es (1) tritt – trat – hat getreten / (2) ist getreten",
+                    "imperativ": " tritt!",
+                    "bedeutung": "(1) mit dem Fuß [auf, an] etwas stoßen / (2) hereinkommen, eintreten",
+                    "ergaenzungen": "(1) jemanden/etwas (Akk.) / (2) wohin? auf, in etwas (Akk.)",
+                    "beispiele": "(1) Pass auf, tritt nicht den Hund! / (2) Tretet nicht auf den Rasen! / Sie ist ins Zimmer getreten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "verzeihen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es verzeiht – verzieh – hat verziehen",
+                    "imperativ": "",
+                    "bedeutung": "nicht mehr böse sein",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "Wir verzeih euch. / Sie hat ihm den Fehler verziehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "weisen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es weist – wies – hat gewiesen",
+                    "imperativ": "",
+                    "bedeutung": "zeigen, hinweisen",
+                    "ergaenzungen": "jemandem (Dat.) etwas (Akk.) / wohin?",
+                    "beispiele": "Der Wegweiser weist uns den Weg. / Sie hat mich zum Ausgang gewiesen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "werben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es wirbt – warb – hat geworben",
+                    "imperativ": "",
+                    "bedeutung": "(1) Reklame machen / (2) sich bemühen um",
+                    "ergaenzungen": "(1) für etwas (Akk.) / (2) um jemanden/etwas (Akk.)",
+                    "beispiele": "(1) Die Firma warb für ihr neues Produkt. / (2) Er hat um ihre Gunst geworben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "wiegen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es wiegt – wog – hat gewogen",
+                    "imperativ": "",
+                    "bedeutung": "(1) ein bestimmtes Gewicht haben / (2) das Gewicht messen",
+                    "ergaenzungen": "(1) intransitiv, kein Objekt; (2) etwas (Akk.)",
+                    "beispiele": "(1) Das Paket wiegt 5 Kilo. / (2) Hast du das Baby gewogen?",
+                    "hinweis": "C  NICHT verwechseln mit dem schwachen Verb \"wiegen\" (wiegt, wiegte, hat gewiegt) = sanft schaukeln; z.B. \"er wiegte das Baby in seinen Armen; er hat es gewiegt\")!"
+          },
+          {
+                    "infinitive": "zwingen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es zwingt – zwang – hat gezwungen",
+                    "imperativ": "",
+                    "bedeutung": "mit Gewalt durchsetzen",
+                    "ergaenzungen": "(1) jemanden (Akk.) zu etwas (Dat.); (2) + Infinitiv mit zu",
+                    "beispiele": "(1) Sie haben uns zur Unterschrift gezwungen. / (2) Niemand zwingt dich zu lernen (du machst es freiwillig).",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "anfangen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es fängt an – fing an – hat angefangen",
+                    "imperativ": "",
+                    "bedeutung": "beginnen",
+                    "ergaenzungen": "(1) intransitiv, kein Objekt / (2) etwas (Akk.) / (3) mit etwas (Dat.) / (4) + Infinitiv mit zu",
+                    "beispiele": "(1) Der Unterricht fängt um 8 Uhr an. / (2) Ihr habt den Streit angefangen. / (3) Sie fingen zu spät mit der Arbeit an. / (4) Max hat endlich zu lernen angefangen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "ankommen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es kommt an – kam an – ist angekommen",
+                    "imperativ": "",
+                    "bedeutung": "an einem Ziel eintreffen",
+                    "ergaenzungen": "wo?, wann?",
+                    "beispiele": "Sie kamen um 10 Uhr am Hauptbahnhof an. / Wir sind viel zu spät angekommen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "anrufen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es ruft an – rief an – hat angerufen",
+                    "imperativ": "",
+                    "bedeutung": "(1) telefonieren; (2) mit einem höheren Wesen sprechen",
+                    "ergaenzungen": "jemanden (Akk.)",
+                    "beispiele": "(1) Rufst du mich morgen an? / Sie hat mich gestern angerufen. / (2) Die Gläubigen riefen Gott um Hilfe an.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "aufstehen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es steht auf – stand auf – ist aufgestanden",
+                    "imperativ": "",
+                    "bedeutung": "aus dem Bett/vom Stuhl hochkommen",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Meine Mutter stand immer sehr früh auf. / Bei der Zeugnisübergabe sind wir alle aufgestanden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "einladen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es lädt ein – lud ein – hat eingeladen",
+                    "imperativ": "",
+                    "bedeutung": "(1) höflich zu Gast bitten / (2) Waren in ein Fahrzeug befördern",
+                    "ergaenzungen": "(1) jemanden (Akk.) zu etwas (Dat.) / (2) etwas (Akk.) wohin?",
+                    "beispiele": "(1) Wir laden euch zu unserer Feier ein. / Du hast mich zum Essen eingeladen, vielen Dank! / (2) Die Arbeiter luden schwere Säcke in den LKW ein.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "fernsehen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es sieht fern – sah fern – hat ferngesehen",
+                    "imperativ": "",
+                    "bedeutung": "Fernsehprogramm anschauen",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Siehst du gerne fern? / Gestern haben wir stundenlang ferngesehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "mitnehmen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es nimmt mit – nahm mit – hat mitgenommen",
+                    "imperativ": "",
+                    "bedeutung": "etwas mit sich nehmen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Nehmt lieber einen Regenschirm mit! / Ich habe meine Tasche mitgenommen. / Sie nahm ihre kleine Schwester mit.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "umziehen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es zieht um – zog um – ist umgezogen",
+                    "imperativ": "",
+                    "bedeutung": "die Wohnung wechseln",
+                    "ergaenzungen": "wohin? (nach/in + Akk.)",
+                    "beispiele": "Wann ziehst du um? / Wir sind letztes Jahr in die Schweiz umgezogen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "umziehen (sich)",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es zieht sich um – zog sich um – hat sich umgezogen",
+                    "imperativ": "",
+                    "bedeutung": "die Kleidung wechseln",
+                    "ergaenzungen": "reflexiv, kein Objekt",
+                    "beispiele": "Vor der Feier zogen sich alle um. / Wie schön, dass ihr euch umgezogen habt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "verstehen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es versteht – verstand – hat verstanden",
+                    "imperativ": "",
+                    "bedeutung": "den Sinn von etwas erfassen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Verstehst du die Aufgabe? / Ich habe alles verstanden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "beschreiben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es beschreibt – beschrieb – hat beschrieben",
+                    "imperativ": "",
+                    "bedeutung": "mit Worten darstellen",
+                    "ergaenzungen": "jemanden/etwas (Akk.) / (2) jemandem (Dat.) etwas (Akk.)",
+                    "beispiele": "(1) Sie hat ihre Reise anschaulich beschrieben. / (2) Beschreib mir bitte den Weg!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "empfangen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es empfängt – empfing – hat empfangen",
+                    "imperativ": "",
+                    "bedeutung": "in Empfang nehmen, begrüßen, bekommen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Der Gastgeber empfängt die Gäste. / Wir haben viele Geschenke empfangen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "erkennen",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es erkennt – erkannte – hat erkannt",
+                    "imperativ": "",
+                    "bedeutung": "identifizieren, wiedererkennen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Erkennst du mich? / Ihr habt das Problem nicht erkannt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "unterschreiben",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es unterschreibt – unterschrieb – hat unterschrieben",
+                    "imperativ": "",
+                    "bedeutung": "den Namen unter ein Dokument setzen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Unterschreiben Sie hier! / Hast du den Antrag unterschrieben?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "anfahren",
+                    "level": "B1",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es fährt an – fuhr an – (1) ist angefahren / (2) hat angefahren",
+                    "imperativ": "",
+                    "bedeutung": "(1) (ein Fahrzeug) starten, losfahren / (2) mit einem Fahrzeug berühren oder verletzen / (3) scharf zurechtweisen",
+                    "ergaenzungen": "(1) intransitiv, kein Objekt; (2) jemanden/etwas (Akk.) (3) jemanden (Akk.)",
+                    "beispiele": "(1) Der Zug ist sehr langsam angefahren. / (2) Beim Unfall fuhr das Auto zwei Fußgänger an. / (3) Die Lehrerin hat einen störenden Schüler angefahren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bergen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es birgt – barg – hat geborgen",
+                    "imperativ": "",
+                    "bedeutung": "retten, in Sicherheit bringen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Die Feuerwehr barg zahlreiche Verletzte aus dem Wrack. / Die Mannschaft hat die Ladung geborgen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "blasen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es bläst – blies – hat geblasen",
+                    "imperativ": "",
+                    "bedeutung": "Luft durch den Mund pressen",
+                    "ergaenzungen": "intransitiv, kein Objekt; wie?, wohin?, woher?",
+                    "beispiele": "Der Wind bläst stark. / Um ihr Kind zu trösten, blies sie auf seine Wunde.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gebären",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gebärt/gebiert – gebar – hat geboren",
+                    "imperativ": "",
+                    "bedeutung": "ein Kind zur Welt bringen",
+                    "ergaenzungen": "jemanden (Akk.)",
+                    "beispiele": "Sie gebiert (gebärt) ihr zweites Kind. / Die Frau hat Zwillinge geboren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "pfeifen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es pfeift – pfiff – hat gepfiffen",
+                    "imperativ": "",
+                    "bedeutung": "(1) einen Ton durch Lippen oder ein Instrument erzeugen / (2) nicht beachten",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) auf etwas (Akk.)",
+                    "beispiele": "(1) Sie pfiff ein Lied. / Der Schiedsrichter hat gepfiffen. / (2) Wir pfeifen auf die Meinung anderer Leute [Redewendung].",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "reißen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es reißt – riss – (1) hat gerissen / (2) ist gerissen",
+                    "imperativ": "",
+                    "bedeutung": "(1) mit Kraft zerteilen / zerbrechen / (2) entzweigehen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) intransitiv, kein Objekt",
+                    "beispiele": "(1) Ich habe den Brief mittendurch gerissen. / (2) Schade, jetzt ist die Schnur gerissen!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "ringen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es ringt – rang – hat gerungen",
+                    "imperativ": "",
+                    "bedeutung": "kämpfen, sich sehr bemühen",
+                    "ergaenzungen": "um etwas (Akk.) / mit jemandem (Dat.)",
+                    "beispiele": "Er ringt um Fassung. / Die Gegner haben lange miteinander gerungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "saufen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es säuft – soff – hat gesoffen",
+                    "imperativ": "",
+                    "bedeutung": "(1) trinken (bei Tieren) / (2) sehr viel [Alkohol] trinken (bei Menschen)",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "(1) Das Pferd säuft Wasser. / (2) Beim Oktoberfest haben sie wieder viel zu viel gesoffen. [Umgangssprache, derb]",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schmelzen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schmilzt – schmolz – (1) ist geschmolzen / (2) hat geschmolzen",
+                    "imperativ": " schmilz!",
+                    "bedeutung": "(1) durch Wärme flüssig werden / (2) durch Wärme flüssig machen",
+                    "ergaenzungen": "(1) intransitiv, kein Objekt / (2) etwas (Akk.)",
+                    "beispiele": "(1) Der Schnee schmilzt. / (2) Die Sonne hat das Eis geschmolzen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schreiten",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schreitet – schritt – ist geschritten",
+                    "imperativ": "",
+                    "bedeutung": "würdevoll gehen",
+                    "ergaenzungen": "wo?, wohin?",
+                    "beispiele": "Die Braut schritt zum Altar. / Er ist langsam durch den Saal geschritten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schweigen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schweigt – schwieg – hat geschwiegen",
+                    "imperativ": "",
+                    "bedeutung": "nichts sagen, still sein",
+                    "ergaenzungen": "intransitiv, kein Objekt; zu etwas (Dat.), über etwas (Akk.)",
+                    "beispiele": "Du schweigst jetzt besser. / Der Angeklagte schwieg zu allen Vorwürfen. / Unsere Eltern haben über ihre Vergangenheit geschwiegen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schwellen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schwillt – schwoll – ist geschwollen",
+                    "imperativ": "",
+                    "bedeutung": "dicker, größer werden",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Dein Fuß schwillt. / Die Augen sind stark geschwollen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schwinden",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schwindet – schwand – ist geschwunden",
+                    "imperativ": "",
+                    "bedeutung": "weniger werden, sich verringern, aufhören",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Seine Kraft schwindet. / Unsere Hoffnung ist noch nicht geschwunden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schwören",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es schwört – schwor – hat geschworen",
+                    "imperativ": "",
+                    "bedeutung": "einen Eid ablegen, nachdrücklich versichern",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) auf etwas (Akk.) / (3) + Infinitiv (zu)",
+                    "beispiele": "(1) Er hat Rache geschworen. / (2) Bei Bauchweh schwöre ich auf Kamillentee! / (3) Schwören Sie, die Wahrheit zu sagen! (z.B. vor Gericht)",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "spinnen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es spinnt – spann – hat gesponnen",
+                    "imperativ": "",
+                    "bedeutung": "Fäden herstellen / Unsinn reden (Umgangssprache)",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Die Spinnen spinnen ihre Netze. / Du spinnst wohl! (ugs.)",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "stechen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es sticht – stach – hat gestochen",
+                    "imperativ": " stich!",
+                    "bedeutung": "mit etwas Spitzem verletzen",
+                    "ergaenzungen": "jemanden/etwas (Akk.) / mit etwas (Dat.) / in etwas (Akk.)",
+                    "beispiele": "Bienen stechen. / Eine Wespe hat mich gestochen. / Sie stach sich mit der Nadel in den Finger.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "stoßen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es stößt – stieß – hat gestoßen / (2) ist gestoßen",
+                    "imperativ": "",
+                    "bedeutung": "(1) mit Kraft anschieben, schubsen / (2) prallen, anstoßen",
+                    "ergaenzungen": "(1) jemanden/etwas (Akk.) / (2) an/auf etwas (Akk.)",
+                    "beispiele": "(1) Er hat mich gestoßen. / (2) Ich bin mit dem Kopf an die Tür gestoßen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "streichen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es streicht – strich – (1) (2) hat gestrichen / (3) ist gestrichen",
+                    "imperativ": "",
+                    "bedeutung": "(1) Farbe auftragen / (2) wegnehmen / (3) sanft wehen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) jemandem (Dat.) etwas (Akk.) / (3) durch/über etwas (Akk.)",
+                    "beispiele": "(1) Wir haben die Wand gestrichen / (2) Das Amt hat uns das Wohngeld gestrichen. / (3) Der Abendwind ist durch die Zweige gestrichen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "verderben",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es verdirbt – verdarb – (1) hat verdorben / (2) ist verdorben",
+                    "imperativ": "",
+                    "bedeutung": "(1) ruinieren / (2) schlecht werden",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) intransitiv, kein Objekt",
+                    "beispiele": "(1) Ihr habt uns den Spaß verdorben. / (2) Die Milch ist schnell verdorben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "weichen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es weicht – wich – ist gewichen",
+                    "imperativ": "",
+                    "bedeutung": "zurückgehen, Platz machen",
+                    "ergaenzungen": "jemandem/etwas (Dat.) / von etwas (Dat.)",
+                    "beispiele": "Er weicht dem Gegner keinen Schritt. / Die Angst ist nicht von mir gewichen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "wenden",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es wendet – wandte / wendete – hat gewandt / hat gewendet",
+                    "imperativ": "",
+                    "bedeutung": "(1) umdrehen, die Richtung ändern; (2) hingehen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) sich an jemanden (Akk.) / zu jemandem (Dat.)",
+                    "beispiele": "(1) Wende bitte das Auto! / (2) Er wandte den Kopf zu ihr um. / Wir haben uns an die Polizei gewandt [gewendet].",
+                    "hinweis": "️  Bei diesem Verb haben die schwachen Formen \"wendete – hat gewendet\" dieselbe Bedeutung wie die starken!"
+          },
+          {
+                    "infinitive": "winden",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es windet – wand – hat gewunden",
+                    "imperativ": "",
+                    "bedeutung": "(1) drehen, flechten / (2) sich krümmen",
+                    "ergaenzungen": "(1) etwas (Akk.) um etwas (Akk.) / (2) sich [reflexiv]",
+                    "beispiele": "(1) Sie windet den Kranz. / (2) Um den alten Baum wand sich Efeu. / Die Schlange hat sich gewunden.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bestreiten",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es bestreitet – bestritt – hat bestritten",
+                    "imperativ": "",
+                    "bedeutung": "(1) leugnen, abstreiten / (2) finanzieren",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "(1) Die Angeklagten bestritten alle Vorwürfe. / (2) Du hast deinen Lebensunterhalt immer selbst bestritten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "betreiben",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es betreibt – betrieb – hat betrieben",
+                    "imperativ": "",
+                    "bedeutung": "(1) voranbringen, durchführen / (2) ein Geschäft führen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "(1) Wir betreiben den Abschluss unseres Projekts. / (2) Seine Großeltern betrieben ein Restaurant.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bewerben (sich)",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es bewirbt sich – bewarb sich – hat sich beworben",
+                    "imperativ": " bewirb dich!",
+                    "bedeutung": "eine Bewerbung einreichen",
+                    "ergaenzungen": "um etwas (Akk.) / bei jemandem (Dat.)",
+                    "beispiele": "Ich bewerbe mich um diese Stelle. / Bewirb dich doch bei unserer Firma!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "erwerben",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es erwirbt – erwarb – hat erworben",
+                    "imperativ": "",
+                    "bedeutung": "(1) bekommen, erlangen / (2) kaufen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "(1) Er erwarb sein Zertifikat in einem unserer Kurse. / (2) Sie hat ein Haus erworben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "erwägen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es erwägt – erwog – hat erwogen",
+                    "imperativ": "",
+                    "bedeutung": "über etwas nachdenken, in Betracht ziehen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Wir erwägen einen Umzug. / Die Regierung hat neue Maßnahmen zur Einsparung erwogen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "verfallen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es verfällt – verfiel – ist verfallen",
+                    "imperativ": "",
+                    "bedeutung": "(1) ungültig werden / (2) in schlechten Zustand kommen / (3) süchtig sein",
+                    "ergaenzungen": "(1) (2) intransitiv, kein Objekt / (3) etwas (Dat.)",
+                    "beispiele": "(1) Das Ticket verfällt morgen. / (2) Das Haus ist völlig verfallen. / (3) Er ist dem Alkohol verfallen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "verschlingen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es verschlingt – verschlang – hat verschlungen",
+                    "imperativ": "",
+                    "bedeutung": "gierig essen / begeistert lesen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Er verschlingt seine Pizza. / Sie hat das Buch verschlungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "vollbringen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es vollbringt – vollbrachte – hat vollbracht",
+                    "imperativ": "",
+                    "bedeutung": "(gehoben) eine schwierige Leistung erbringen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Er hat eine Meisterleistung vollbracht. / Die Helfer*innen vollbrachten Großartiges.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "zerbrechen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es zerbricht – zerbrach – (1) hat zerbrochen / (2) ist zerbrochen",
+                    "imperativ": "",
+                    "bedeutung": "(1) in Stücke brechen, kaputt machen / (2) kaputt gehen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) intransitiv, kein Objekt",
+                    "beispiele": "(1) Das Kind hat aus Versehen den Teller zerbrochen. / (2) Pass auf, dass die Vase nicht zerbricht!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "nachweisen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es weist nach – wies nach – hat nachgewiesen",
+                    "imperativ": "",
+                    "bedeutung": "etwas beweisen, belegen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Die Studie wies einen Zusammenhang zwischen Zucker und Karies nach. / Der Angeklagte hat seine Unschuld nachgewiesen, er wird freigesprochen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "widersprechen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es widerspricht – widersprach – hat widersprochen",
+                    "imperativ": "",
+                    "bedeutung": "eine andere Meinung äußern, das Gegenteil behaupten",
+                    "ergaenzungen": "jemandem/etwas (Dat.)",
+                    "beispiele": "Ich widerspreche dir. / Ihr habt der falschen Behauptung überzeugend widersprochen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "ausweichen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es weicht aus – wich aus – ist ausgewichen",
+                    "imperativ": "",
+                    "bedeutung": "zur Seite gehen/fahren, um nicht zu treffen",
+                    "ergaenzungen": "jemandem/etwas (Dat.)",
+                    "beispiele": "Der Fahrer wich dem Hindernis aus. / Ihr seid meiner Frage ausgewichen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "eingreifen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es greift ein – griff ein – hat eingegriffen",
+                    "imperativ": "",
+                    "bedeutung": "in eine Situation aktiv einschreiten",
+                    "ergaenzungen": "intransitiv, kein Objekt; in etwas (Akk.)",
+                    "beispiele": "Die Polizei greift ein. / Der Lehrer hat in den Streit eingegriffen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "nachgeben",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gibt nach – gab nach – hat nachgegeben",
+                    "imperativ": "",
+                    "bedeutung": "seinen Widerstand aufgeben, sich fügen",
+                    "ergaenzungen": "jemandem/etwas (Dat.)",
+                    "beispiele": "Er gab dem Druck nach. / Wir haben euren Bitten nachgegeben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "vorangehen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es geht voran – ging voran – ist vorangegangen",
+                    "imperativ": "",
+                    "bedeutung": "vorwärts gehen, den Weg zeigen / als Vorbild dienen",
+                    "ergaenzungen": "jemandem (Dat.)",
+                    "beispiele": "Die Leitkuh geht der Herde voran. / Du bist deinen Freunden mit gutem Beispiel vorangegangen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "begreifen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es begreift – begriff – hat begriffen",
+                    "imperativ": "",
+                    "bedeutung": "verstehen, erfassen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Begreifst du die Aufgabe? / Endlich habe ich sie begriffen!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "übersehen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es übersieht – übersah – hat übersehen",
+                    "imperativ": "",
+                    "bedeutung": "nicht bemerken, nicht sehen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Ich glaube, du übersahst das Wichtigste. / Wie schön: Die Lehrerin hat den Fehler übersehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "ausbrechen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es bricht aus – brach aus – ist ausgebrochen",
+                    "imperativ": "",
+                    "bedeutung": "(1) plötzlich beginnen / (2) entkommen",
+                    "ergaenzungen": "intransitiv, kein Objekt / (2) aus etwas (Dat.)",
+                    "beispiele": "(1) Ein Feuer (ein Krieg) ist ausgebrochen. / (2) Der Häftling brach aus dem Gefängnis aus.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "zerreißen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es zerreißt – zerriss – (1) hat zerrissen / (2) ist zerrissen",
+                    "imperativ": "",
+                    "bedeutung": "(1) in Stücke reißen / (2) in Stücke gehen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) intransitiv, kein Objekt",
+                    "beispiele": "(1) Sie hat den Brief zerrissen. / (2) Das Seil ist zerrissen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gerinnen",
+                    "level": "B2",
+                    "category": 2,
+                    "categoryName": "Aufbau (B1-B2)",
+                    "forms": "er/sie/es gerinnt – gerann – ist geronnen",
+                    "imperativ": "",
+                    "bedeutung": "Flüssigkeit (Blut, Milch etc.) bildet Klümpchen und wird dickflüssig",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Ungekühlte Milch gerinnt schnell. / Sein Blut war bereits geronnen.",
+                    "hinweis": "️  Das Partizip II NICHT verwechseln mit dem gleich lautenden Partizip II des Verbs \"rinnen\" (Beispiel: Bis gestern ist hier ein Bach geronnen.)!"
+          },
+          {
+                    "infinitive": "<u>durch</u>brechen (Präfix betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es bricht durch – brach durch – (1) hat durchgebrochen / (2) ist durchgebrochen",
+                    "imperativ": " brich durch!",
+                    "bedeutung": "(1) in Teile brechen / (2) durchstoßen, fallen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) etwas (Akk.), durch etwas hindurch (Akk.)",
+                    "beispiele": "(1) Brich die Tafel Schokolade durch! / Ich habe die Tafel Schokolade durchgebrochen. / Der Maurer durchbrach die Wand. (2) Er ist durch die dünne Eisdecke durchgebrochen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "durch<u>bre</u>chen (Stammsilbe betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es durchbricht – durchbrach – hat durchbrochen",
+                    "imperativ": " durchbrich!",
+                    "bedeutung": "durch ein Hindernis dringen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Der Düsenjäger hat die Schallmauer durchbrochen. / Durchbrich deine alten Verhaltensmuster!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "<u>um</u>fahren (Präfix betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es fährt um – fuhr um – hat umgefahren",
+                    "imperativ": "",
+                    "bedeutung": "mit einem Fahrzeug umstoßen, überfahren",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Vorsicht, du fährst ja beinahe den Radfahrer um! / Der Lkw hat den Briefkasten umgefahren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "um<u>fah</u>ren (Stammsilbe betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es umfährt – umfuhr – hat umfahren",
+                    "imperativ": "",
+                    "bedeutung": "um etwas herumfahren, ausweichen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Ihr umfahrt die Baustelle am besten weiträumig. / Der Busfahrer hat das Hindernis geschickt umfahren.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "<u>um</u>gehen (Präfix betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es geht um – ging um – ist umgegangen",
+                    "imperativ": "",
+                    "bedeutung": "zurechtkommen, hantieren",
+                    "ergaenzungen": "mit jemandem/mit etwas (Dat.)",
+                    "beispiele": "Du gehst mit deinem jüngeren Bruder sehr nett um. / Der Chef ist mit seinen Mitarbeiter*innen nicht freundlich umgegangen. / Geh mit deiner Kleidung sorgfältiger um!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "um<u>ge</u>hen (Stammsilbe betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es umgeht – umging – hat umgangen",
+                    "imperativ": "",
+                    "bedeutung": "außen herumgehen, vermeiden",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Sie umging das peinliche Thema sehr geschickt. / Ihr habt euren Chef umgangen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "<u>um</u>schreiben (Präfix betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es schreibt um – schrieb um – hat umgeschrieben",
+                    "imperativ": "",
+                    "bedeutung": "einen Text überarbeiten, neu schreiben",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Ich schreibe das Kapitel noch einmal um. / Sie hat den ganzen Aufsatz umgeschrieben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "um<u>schrei</u>ben (Stammsilbe betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es umschreibt – umschrieb – hat umschrieben",
+                    "imperativ": "",
+                    "bedeutung": "etwas mit Worten darstellen, umgangssprachlich ausdrücken",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Umschreibe den Begriff doch einfach. / Er hat seine Gefühle vorsichtig umschrieben.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "<u>ü</u>berlaufen (Präfix betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es läuft über – lief über – ist übergelaufen",
+                    "imperativ": " lauf[e] über!",
+                    "bedeutung": "(1) über den Rand fließen / (2) die Seiten wechseln",
+                    "ergaenzungen": "(1) intransitiv, kein Objekt / (2) zu jemandem/etwas (Dat.)",
+                    "beispiele": "(1) Die Badewanne läuft über! / (2) Die Politiker sind zur gegnerischen Partei übergelaufen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "über<u>lau</u>fen (Stammsilbe betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es überläuft – überlief – (1) (2) hat überlaufen / (3) ist überlaufen",
+                    "imperativ": " überlaufe!",
+                    "bedeutung": "(1) frösteln / (2) darüber springen / (3) überfüllt sein",
+                    "ergaenzungen": "(1) jemanden / etwas (Akk.) / (2) etwas (Akk.) / (3) intransitiv, kein Objekt",
+                    "beispiele": "(1) Ein Schauder überlief mich. / (2) Die Athletin hat die Hürde mühelos überlaufen. / (3) Venedig ist von Touristen überlaufen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "<u>ü</u>bersetzen (Präfix betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es setzt über – setzte über – ist übergesetzt",
+                    "imperativ": "",
+                    "bedeutung": "von einer zur anderen Seite eines Gewässers fahren",
+                    "ergaenzungen": "über etwas (Akk.) / nach/zu etwas (Dat.)",
+                    "beispiele": "Die Fähre setzt über. / Wir sind über den Fluss zum anderen Ufer übergesetzt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "über<u>set</u>zen (Stammsilbe betont)",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es übersetzt – übersetzte – hat übersetzt",
+                    "imperativ": "",
+                    "bedeutung": "von einer in eine andere Sprache übertragen",
+                    "ergaenzungen": "etwas (Akk.) (aus einer Sprache / in eine Sprache)",
+                    "beispiele": "Übersetzt den Text wörtlich. / Sie hat das Buch aus dem Englischen ins Deutsche übersetzt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "bewegen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es bewegt – bewog – hat bewogen",
+                    "imperativ": "",
+                    "bedeutung": "jemanden veranlassen, überreden",
+                    "ergaenzungen": "(1) jemanden (Akk.) zu etwas (Dat.); (2) + Infinitiv (zu)",
+                    "beispiele": "(1) Was bewog dich zu dieser Entscheidung? / (2) Nichts hat ihn bewogen zu bleiben.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"etwas/sich bewegen\" (bewegt, bewegte, hat bewegt)!"
+          },
+          {
+                    "infinitive": "dringen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es dringt – drang – (1) ist gedrungen / (2) hat gedrungen",
+                    "imperativ": "",
+                    "bedeutung": "(1) einbrechen, eindringen / (2) nachdrücklich fordern, bestehen auf",
+                    "ergaenzungen": "(1) in/durch etwas (Akk.) / (2) auf etwas (Akk.)",
+                    "beispiele": "(1) Wasser dringt in den Keller. / (2) Er hat auf eine Antwort gedrungen.",
+                    "hinweis": "️  NICHT verwechseln mit dem ähnlich klingenden schwachen Verb \"drängen\" (jemanden unter Druck setzen: drängt, drängte, hat gedrängt)!"
+          },
+          {
+                    "infinitive": "erlöschen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es erlischt – erlosch – ist erloschen",
+                    "imperativ": "",
+                    "bedeutung": "ausgehen (Feuer/Licht)",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Die Flamme erlischt. / Das Feuer ist erloschen.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"löschen\" (ein Feuer löschen [ausmachen]: löscht, löschte, hat gelöscht)!"
+          },
+          {
+                    "infinitive": "fechten",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es ficht – focht – hat gefochten",
+                    "imperativ": "",
+                    "bedeutung": "mit dem Degen kämpfen",
+                    "ergaenzungen": "mit jemandem (Dat.) / gegen jemanden (Akk.)",
+                    "beispiele": "Die Musketiere fochten tapfer gegen ihre Feinde. / Sie haben einen guten Kampf gefochten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gedeihen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es gedeiht – gedieh – ist gediehen",
+                    "imperativ": "",
+                    "bedeutung": "gut wachsen, sich gut entwickeln",
+                    "ergaenzungen": "intransitiv, kein Objekt",
+                    "beispiele": "Die Pflanze gedeiht prächtig. / Das Projekt ist gut gediehen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "genesen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es genest – genas – ist genesen",
+                    "imperativ": "",
+                    "bedeutung": "gesund werden, sich erholen",
+                    "ergaenzungen": "von etwas (Dat.)",
+                    "beispiele": "Der Patient genas nur langsam. / Sie ist von ihrer Krankheit genesen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "gleiten",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es gleitet – glitt – ist geglitten",
+                    "imperativ": "",
+                    "bedeutung": "sanft und reibungslos sich fortbewegen, rutschen",
+                    "ergaenzungen": "über/durch etwas (Akk.)",
+                    "beispiele": "Die Boote gleiten über das Wasser. / Er ist auf dem Eis geglitten.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "klimmen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es klimmt – klomm – ist geklommen",
+                    "imperativ": "",
+                    "bedeutung": "klettern",
+                    "ergaenzungen": "auf etwas (Akk.)",
+                    "beispiele": "Der Bergsteiger klimmt den Felsen hinauf. / Sie sind auf den Berg geklommen.",
+                    "hinweis": "️  NICHT verwechseln mit dem Verb \"glimmen\" (= ohne Flamme glühen: glimmt, glimmte/glomm, hat geglimmt/hat geglommen)!"
+          },
+          {
+                    "infinitive": "kneifen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es kneift – kniff – hat gekniffen",
+                    "imperativ": "",
+                    "bedeutung": "mit Fingern zwicken / (ugs.) sich vor etwas drücken",
+                    "ergaenzungen": "jemanden (Akk.) / vor etwas (Dat.)",
+                    "beispiele": "Kneif mich nicht! / Er hat vor der Aufgabe gekniffen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "kriechen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es kriecht – kroch – ist gekrochen",
+                    "imperativ": "",
+                    "bedeutung": "sich auf dem Bauch fortbewegen",
+                    "ergaenzungen": "intransitiv, kein Objekt; wo?, wohin?, woher?",
+                    "beispiele": "Die Schlange kroch über den Weg. / Das Baby ist unter den Tisch gekrochen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "melken",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es melkt – molk/melkte – hat gemolken",
+                    "imperativ": "",
+                    "bedeutung": "Milch von Tieren gewinnen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Der Bauer melkt die Kühe. / Hast du schon einmal Ziegen gemolken?",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "preisen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es preist – pries – hat gepriesen",
+                    "imperativ": "",
+                    "bedeutung": "laut loben, rühmen",
+                    "ergaenzungen": "jemanden/etwas (Akk.)",
+                    "beispiele": "Man preist seine Leistungen. / Sie haben den Mut der Helfer gepriesen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "quellen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es quillt – quoll – ist gequollen",
+                    "imperativ": "",
+                    "bedeutung": "hervorquellen, anschwellen",
+                    "ergaenzungen": "aus etwas (Dat.)",
+                    "beispiele": "An einer Quelle quillt Wasser aus der Erde. / Die Bohnen sind gequollen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "rinnen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es rinnt – rann – ist geronnen",
+                    "imperativ": "",
+                    "bedeutung": "tropfend/sanft fließen",
+                    "ergaenzungen": "wo?, wohin?",
+                    "beispiele": "Tränen rannen ihr übers Gesicht. / Bis gestern ist der Bach durchs Tal geronnen, heute ist er trocken.",
+                    "hinweis": "️  Das Partizip II NICHT verwechseln mit dem gleich lautenden Partizip II des gleich konjugierten Verbs \"gerinnen\" (Beispiel: Sein Blut war bereits geronnen.)!"
+          },
+          {
+                    "infinitive": "saugen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es saugt – sog/saugte – hat gesogen/hat gesaugt",
+                    "imperativ": "",
+                    "bedeutung": "durch Unterdruck aufnehmen",
+                    "ergaenzungen": "etwas (Akk.) / an etwas (Dat.)",
+                    "beispiele": "Das Baby hat an seinem Schnuller gesogen. / Gestern habe ich Staub gesaugt.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schleichen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es schleicht – schlich – ist geschlichen",
+                    "imperativ": "",
+                    "bedeutung": "sich heimlich und leise bewegen",
+                    "ergaenzungen": "wo?, wohin?, woher?",
+                    "beispiele": "Die Katze schlich durchs Gras. / Er ist aus dem Zimmer geschlichen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schleifen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es schleift – schliff – hat geschliffen",
+                    "imperativ": "",
+                    "bedeutung": "durch Reiben glätten/schärfen",
+                    "ergaenzungen": "etwas (Akk.)",
+                    "beispiele": "Er schleift das Messer. / Der Handwerker hat den Stein geschliffen.",
+                    "hinweis": "️  NICHT verwechseln mit dem schwachen Verb \"schleifen\" (etwas auf dem Boden Liegendes ziehen: schleift, schleifte, hat geschleift)!"
+          },
+          {
+                    "infinitive": "schlingen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es schlingt – schlang – hat geschlungen",
+                    "imperativ": "",
+                    "bedeutung": "(1) umwickeln / (2) hastig essen, ohne Kauen schlucken",
+                    "ergaenzungen": "(1) etwas (Akk.) um etwas (Akk.) / (2) etwas (Akk.)",
+                    "beispiele": "(1) Sie schlingt sich einen Schal um den Hals. / (2) Schling doch den Burger nicht so hastig!",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "schwingen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es schwingt – schwang – (1) hat geschwungen / (2) ist geschwungen",
+                    "imperativ": "",
+                    "bedeutung": "(1) hin und her bewegen / (2) sich schwingen",
+                    "ergaenzungen": "(1) etwas (Akk.) / (2) wo?, wohin?",
+                    "beispiele": "(1) Sie haben die Fahnen geschwungen. / (2) Tarzan ist von Baum zu Baum geschwungen.",
+                    "hinweis": ""
+          },
+          {
+                    "infinitive": "sinnen",
+                    "level": "C1",
+                    "category": 3,
+                    "categoryName": "Fortgeschritten (C1)",
+                    "forms": "er/sie/es sinnt – sann – hat gesonnen",
+                    "imperativ": "",
+                    "bedeutung": "(gehoben) nachdenken, intensiv denken an, grübeln",
+                    "ergaenzungen": "(1) über etwas (Akk.) / (2) auf etwas (Akk.)",
+                    "beispiele": "(1) Sie hat lange über das Problem gesonnen. / (2) Die Feinde sannen auf Rache.",
+                    "hinweis": ""
+          }
+];
+        
+        const POPUP_MESSAGES_GOOD = [
+          { title: "Super!", message: "Perfekt! 💪" },
+          { title: "Stark!", message: "Das sitzt! 👍" },
+          { title: "Prima!", message: "Weiter so! ⭐" },
+          { title: "Toll!", message: "Sehr gut! 🎯" }
+        ];
+        
+        const POPUP_MESSAGES_MEDIUM = [
+          { title: "Gut gemacht!", message: "Du bist auf dem richtigen Weg. Übung macht den Meister! 💪" },
+          { title: "Schon besser!", message: "Du machst Fortschritte. Bleib dran, es wird immer leichter! 🌟" },
+          { title: "Weiter üben!", message: "Jedes Verb braucht Zeit. Du schaffst das! 📚" },
+          { title: "Fast geschafft!", message: "Noch ein paar Wiederholungen, dann sitzt es perfekt! 🎯" }
+        ];
+        
+        const LEVEL_COLORS = {
+          'A1': 'bg-green-100 text-green-800 border-green-300',
+          'A2': 'bg-blue-100 text-blue-800 border-blue-300',
+          'B1': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+          'B2': 'bg-orange-100 text-orange-800 border-orange-300',
+          'C1': 'bg-red-100 text-red-800 border-red-300'
+        };
+
+        const CATEGORY_CONFIG = {
+          1: { name: 'Basis', levels: 'A1-A2', color: 'from-green-500 to-green-600', hoverColor: 'from-green-600 to-green-700' },
+          2: { name: 'Aufbau', levels: 'B1-B2', color: 'from-blue-500 to-blue-600', hoverColor: 'from-blue-600 to-blue-700' },
+          3: { name: 'Fortgeschritten', levels: 'C1', color: 'from-purple-500 to-purple-600', hoverColor: 'from-purple-600 to-purple-700' }
+        };
+        
+        const VerbMeister = () => {
+          const [selectedCategory, setSelectedCategory] = useState(null);
+          const [currentIndex, setCurrentIndex] = useState(0);
+          const [isFlipped, setIsFlipped] = useState(false);
+          const [progress, setProgress] = useState({});
+          const [learnedVerbsSet, setLearnedVerbsSet] = useState(new Set());
+          const [goodVerbs, setGoodVerbs] = useState(new Set());
+          const [mediumVerbs, setMediumVerbs] = useState(new Set());
+          const [difficultVerbs, setDifficultVerbs] = useState(new Set());
+          
+          const [showPopup, setShowPopup] = useState(false);
+          const [popupMessage, setPopupMessage] = useState(null);
+          const [searchTerm, setSearchTerm] = useState('');
+          const [verbAttempts, setVerbAttempts] = useState({});
+          const [showWelcomePopup, setShowWelcomePopup] = useState(true);
+          const [showInstructionsPopup, setShowInstructionsPopup] = useState(false);
+          const [showPrefixPopup, setShowPrefixPopup] = useState(false);
+          const [showContactPopup, setShowContactPopup] = useState(false);
+          const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+          const [deleteTarget, setDeleteTarget] = useState(null);
+          const [randomizedVerbs, setRandomizedVerbs] = useState([]);
+          
+          // Load from localStorage on mount
+          useEffect(() => {
+            try {
+              const savedGood = localStorage.getItem('verbmeister_good');
+              const savedMedium = localStorage.getItem('verbmeister_medium');
+              const savedDifficult = localStorage.getItem('verbmeister_difficult');
+              const savedLearned = localStorage.getItem('verbmeister_learned');
+              const savedProgress = localStorage.getItem('verbmeister_progress');
+              const savedAttempts = localStorage.getItem('verbmeister_attempts');
+              
+              if (savedGood) setGoodVerbs(new Set(JSON.parse(savedGood)));
+              if (savedMedium) setMediumVerbs(new Set(JSON.parse(savedMedium)));
+              if (savedDifficult) setDifficultVerbs(new Set(JSON.parse(savedDifficult)));
+              if (savedLearned) setLearnedVerbsSet(new Set(JSON.parse(savedLearned)));
+              if (savedProgress) setProgress(JSON.parse(savedProgress));
+              if (savedAttempts) setVerbAttempts(JSON.parse(savedAttempts));
+            } catch (e) {
+              console.error('localStorage load error:', e);
+            }
+          }, []);
+          
+          useEffect(() => {
+            if (selectedCategory === 'ALL') {
+              setRandomizedVerbs([...VERBS_DATA].sort(() => Math.random() - 0.5));
+            }
+          }, [selectedCategory]);
+          
+          const searchedVerbs = searchTerm
+            ? VERBS_DATA.filter(v => {
+                const stripHTML = (str) => str.replace(/<[^>]*>/g, '');
+                return stripHTML(v.infinitive).toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       stripHTML(v.forms).toLowerCase().includes(searchTerm.toLowerCase());
+              })
+            : (selectedCategory === 'ALL'
+                ? randomizedVerbs
+                : selectedCategory === 'LEARNED'
+                  ? VERBS_DATA.filter(v => learnedVerbsSet.has(v.infinitive))
+                  : selectedCategory === 'TRAINING'
+                    ? VERBS_DATA.filter(v => mediumVerbs.has(v.infinitive))
+                    : selectedCategory === 'FOCUS'
+                      ? VERBS_DATA.filter(v => difficultVerbs.has(v.infinitive))
+                      : (selectedCategory 
+                          ? VERBS_DATA.filter(v => v.category === selectedCategory)
+                          : VERBS_DATA));
+          
+          const currentVerb = searchedVerbs[currentIndex];
+          
+          const handleCategorySelect = (category, keepSearch = false) => {
+            setSelectedCategory(category);
+            setCurrentIndex(0);
+            setIsFlipped(false);
+            if (!keepSearch) setSearchTerm('');
+          };
+          
+          const handleRating = (rating) => {
+            if (!currentVerb) return;
+            
+            // Popup schließen nur wenn nicht "Nicht aufgeben!"
+            if (showPopup && popupMessage?.title !== "Nicht aufgeben!") {
+              setShowPopup(false);
+            }
+            
+            const newProgress = {
+              ...progress,
+              [currentVerb.infinitive]: rating
+            };
+            setProgress(newProgress);
+            
+            // Save progress to localStorage
+            localStorage.setItem('verbmeister_progress', JSON.stringify(newProgress));
+            
+            // Verben in entsprechende Sets speichern
+            // WICHTIG: Verb aus anderen Sets entfernen!
+            if (rating === 'good') {
+              const newLearned = new Set(learnedVerbsSet);
+              const newGood = new Set(goodVerbs);
+              const newMedium = new Set(mediumVerbs);
+              const newDifficult = new Set(difficultVerbs);
+              
+              newLearned.add(currentVerb.infinitive);
+              newGood.add(currentVerb.infinitive);
+              newMedium.delete(currentVerb.infinitive);  // Aus medium entfernen
+              newDifficult.delete(currentVerb.infinitive);  // Aus difficult entfernen
+              
+              setLearnedVerbsSet(newLearned);
+              setGoodVerbs(newGood);
+              setMediumVerbs(newMedium);
+              setDifficultVerbs(newDifficult);
+              
+              // Save to localStorage
+              localStorage.setItem('verbmeister_learned', JSON.stringify(Array.from(newLearned)));
+              localStorage.setItem('verbmeister_good', JSON.stringify(Array.from(newGood)));
+              localStorage.setItem('verbmeister_medium', JSON.stringify(Array.from(newMedium)));
+              localStorage.setItem('verbmeister_difficult', JSON.stringify(Array.from(newDifficult)));
+            } else if (rating === 'medium') {
+              const newLearned = new Set(learnedVerbsSet);
+              const newGood = new Set(goodVerbs);
+              const newMedium = new Set(mediumVerbs);
+              const newDifficult = new Set(difficultVerbs);
+              
+              newMedium.add(currentVerb.infinitive);
+              newGood.delete(currentVerb.infinitive);  // Aus good entfernen
+              newDifficult.delete(currentVerb.infinitive);  // Aus difficult entfernen
+              newLearned.delete(currentVerb.infinitive);  // Aus Meister-Box entfernen
+              
+              setLearnedVerbsSet(newLearned);
+              setGoodVerbs(newGood);
+              setMediumVerbs(newMedium);
+              setDifficultVerbs(newDifficult);
+              
+              localStorage.setItem('verbmeister_learned', JSON.stringify(Array.from(newLearned)));
+              localStorage.setItem('verbmeister_good', JSON.stringify(Array.from(newGood)));
+              localStorage.setItem('verbmeister_medium', JSON.stringify(Array.from(newMedium)));
+              localStorage.setItem('verbmeister_difficult', JSON.stringify(Array.from(newDifficult)));
+            } else if (rating === 'difficult') {
+              const newLearned = new Set(learnedVerbsSet);
+              const newGood = new Set(goodVerbs);
+              const newMedium = new Set(mediumVerbs);
+              const newDifficult = new Set(difficultVerbs);
+              
+              newDifficult.add(currentVerb.infinitive);
+              newGood.delete(currentVerb.infinitive);  // Aus good entfernen
+              newMedium.delete(currentVerb.infinitive);  // Aus medium entfernen
+              newLearned.delete(currentVerb.infinitive);  // Aus Meister-Box entfernen
+              
+              setLearnedVerbsSet(newLearned);
+              setGoodVerbs(newGood);
+              setMediumVerbs(newMedium);
+              setDifficultVerbs(newDifficult);
+              
+              localStorage.setItem('verbmeister_learned', JSON.stringify(Array.from(newLearned)));
+              localStorage.setItem('verbmeister_good', JSON.stringify(Array.from(newGood)));
+              localStorage.setItem('verbmeister_medium', JSON.stringify(Array.from(newMedium)));
+              localStorage.setItem('verbmeister_difficult', JSON.stringify(Array.from(newDifficult)));
+            }
+            
+            if (rating === 'difficult') {
+              // Pro Verb zählen für spezifisches Feedback
+              const attempts = (verbAttempts[currentVerb.infinitive] || 0) + 1;
+              const newAttempts = {
+                ...verbAttempts,
+                [currentVerb.infinitive]: attempts
+              };
+              setVerbAttempts(newAttempts);
+              
+              // Save attempts to localStorage
+              localStorage.setItem('verbmeister_attempts', JSON.stringify(newAttempts));
+              
+              if (attempts === 5) {
+                // Spezifisch: 5x dasselbe Verb
+                setPopupMessage({
+                  title: "Nicht aufgeben!",
+                  message: `Das Verb "${currentVerb.infinitive}" ist schwierig, aber du übst fleißig! Probiere: Formen aufschreiben, eigene Sätze bilden, laut aussprechen. Du schaffst das! 💪`
+                });
+                setShowPopup(true);
+              } else if (difficultVerbs.size > 0 && difficultVerbs.size % 5 === 0) {
+                // Allgemein: Bei jedem 5. Verb in der Difficult-Gruppe
+                setPopupMessage({
+                  title: "Nicht entmutigen lassen!",
+                  message: "Schwierige Verben brauchen Zeit. Du machst das gut! 💪"
+                });
+                setShowPopup(true);
+              }
+            }
+            
+            // Getrennte Zählung für good/medium - basiert auf Set-Größen
+            if (rating === 'good') {
+              // Feedback bei jedem 5. Verb in der Good-Gruppe
+              if (goodVerbs.size > 0 && goodVerbs.size % 5 === 0) {
+                const randomPopup = POPUP_MESSAGES_GOOD[Math.floor(Math.random() * POPUP_MESSAGES_GOOD.length)];
+                setPopupMessage(randomPopup);
+                setShowPopup(true);
+              }
+            } else if (rating === 'medium') {
+              // Feedback bei jedem 5. Verb in der Medium-Gruppe
+              if (mediumVerbs.size > 0 && mediumVerbs.size % 5 === 0) {
+                const randomPopup = POPUP_MESSAGES_MEDIUM[Math.floor(Math.random() * POPUP_MESSAGES_MEDIUM.length)];
+                setPopupMessage(randomPopup);
+                setShowPopup(true);
+              }
+            }
+            
+            if (searchTerm) {
+              setSearchTerm('');
+              const categoryVerbs = selectedCategory === 'ALL' 
+                ? randomizedVerbs 
+                : selectedCategory === 'LEARNED'
+                  ? VERBS_DATA.filter(v => learnedVerbsSet.has(v.infinitive))
+                  : selectedCategory === 'TRAINING'
+                    ? VERBS_DATA.filter(v => mediumVerbs.has(v.infinitive))
+                    : selectedCategory === 'FOCUS'
+                      ? VERBS_DATA.filter(v => difficultVerbs.has(v.infinitive))
+                      : VERBS_DATA.filter(v => v.category === selectedCategory);
+              const indexInCategory = categoryVerbs.findIndex(v => v.infinitive === currentVerb.infinitive);
+              if (indexInCategory < categoryVerbs.length - 1) {
+                setCurrentIndex(indexInCategory + 1);
+              } else {
+                setCurrentIndex(indexInCategory);
+              }
+              setIsFlipped(false);
+            } else if (currentIndex < searchedVerbs.length - 1) {
+              setCurrentIndex(currentIndex + 1);
+              setIsFlipped(false);
+            }
+            
+
+          };
+          
+          const goToPrevious = () => {
+            setShowPopup(false);
+            if (currentIndex > 0) {
+              setTimeout(() => {
+                setCurrentIndex(currentIndex - 1);
+                setIsFlipped(false);
+              }, 50);
+            }
+          };
+          
+          const goToNext = () => {
+            setShowPopup(false);
+            if (currentIndex < searchedVerbs.length - 1) {
+              setTimeout(() => {
+                setCurrentIndex(currentIndex + 1);
+                setIsFlipped(false);
+              }, 50);
+            }
+          };
+          
+          const resetProgress = () => {
+            // Nur Bewertungs-Zähler zurücksetzen, NICHT die Boxen!
+            setProgress({});
+            setVerbAttempts({});
+            setCurrentIndex(0);
+            setIsFlipped(false);
+            
+            // Nur progress und attempts aus localStorage entfernen
+            localStorage.removeItem('verbmeister_progress');
+            localStorage.removeItem('verbmeister_attempts');
+            
+            // Boxen (goodVerbs, mediumVerbs, difficultVerbs, learnedVerbsSet) bleiben erhalten!
+          };
+          
+          const getProgressStats = () => {
+            const total = searchedVerbs.length;
+            // "Bearbeitet" = alle Verben die mindestens 1x bewertet wurden
+            const bearbeitet = Object.keys(progress).filter(k => 
+              searchedVerbs.some(v => v.infinitive === k)
+            ).length;
+            
+            // Einzelne Box-Größen direkt aus Sets
+            const good = goodVerbs.size;
+            const medium = mediumVerbs.size;
+            const difficult = difficultVerbs.size;
+            
+            return { total, bearbeitet, good, medium, difficult };
+          };
+          
+          const stats = getProgressStats();
+          const learnedCount = learnedVerbsSet.size;
+          
+          if (!selectedCategory) {
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-4">
+                {showWelcomePopup && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-4">Willkommen bei VerbMeister</h2>
+                      <div className="space-y-4 text-gray-700">
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">Was ist VerbMeister?</h3>
+                          <p>Diese App hilft dir, wichtige unregelmäßige und starke Verben im Deutschen zu lernen – vom Basis- bis zum Fortgeschrittenen-Niveau (A1-C1). Die Sammlung der Verben wird noch erweitert.</p>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">Wie funktioniert die App?</h3>
+                          <ul className="list-disc list-inside space-y-1">
+                            <li>Die App ist Open Source (MIT-Lizenz), kostenlos und du kannst sie mit anderen teilen</li>
+                            <li>Erstellt mit Claude AI von Gerhard Härle (Kontakt: <a href="mailto:haerlehd@gmail.com" className="text-blue-600 hover:underline">haerlehd@gmail.com</a>)</li>
+                            <li>Für die erweiterten Funktionen zum Lernfortschritt: <a href="https://claude.ai" target="_blank" class="text-blue-600 hover:underline">kostenloses Konto bei Claude einrichten</a></li>
+                          </ul>
+                        </div>
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <h3 className="font-bold text-lg mb-2">Fragen, Anregungen oder Fehler?</h3>
+                          <p>Schreib mir gerne an <a href="mailto:haerlehd@gmail.com" className="text-blue-600 hover:underline">haerlehd@gmail.com</a> – ich freue mich über Rückmeldungen!</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowWelcomePopup(false)}
+                        className="mt-6 w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold"
+                      >
+                        Los geht's!
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="max-w-4xl mx-auto">
+                  <div className="text-center mb-8 pt-8">
+                    <div className="flex items-center justify-center mb-4">
+                      <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+                        <defs>
+                          <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style={{stopColor:'#3A7BD5', stopOpacity:1}} />
+                            <stop offset="100%" style={{stopColor:'#2C5F8D', stopOpacity:1}} />
+                          </linearGradient>
+                        </defs>
+                        <rect width="200" height="200" fill="url(#bgGrad)" rx="20"/>
+                        <rect x="35" y="145" width="32" height="18" fill="white" opacity="0.25" rx="2"/>
+                        <rect x="58" y="122" width="32" height="18" fill="white" opacity="0.4" rx="2"/>
+                        <rect x="81" y="99" width="32" height="18" fill="white" opacity="0.55" rx="2"/>
+                        <rect x="104" y="76" width="32" height="18" fill="white" opacity="0.7" rx="2"/>
+                        <rect x="127" y="53" width="32" height="18" fill="white" opacity="0.85" rx="2"/>
+                        <text x="100" y="170" fontFamily="Arial, sans-serif" fontSize="72" fontWeight="bold" fill="white" textAnchor="middle" opacity="0.95">V</text>
+                      </svg>
+                    </div>
+                    <h1 className="text-5xl font-bold text-white mb-2">VerbMeister</h1>
+                    <p className="text-xl text-white opacity-90">Lernkarten-App für Deutschlernende</p>
+                    <p className="text-sm text-white opacity-75 mt-2">Starke und unregelmäßige Verben A1 bis C1 • Beta-11.5</p>
+                    <div className="mt-4 space-x-2">
+                      <button
+                        onClick={() => setShowWelcomePopup(true)}
+                        className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg text-sm"
+                      >
+                        👋 Willkommen
+                      </button>
+                      <button
+                        onClick={() => setShowInstructionsPopup(true)}
+                        className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg text-sm"
+                      >
+                        📖 Bedienung
+                      </button>
+                      <button
+                        onClick={() => setShowPrefixPopup(true)}
+                        className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg text-sm"
+                      >
+                        ℹ️ Vorsilben
+                      </button>
+                      <button
+                        onClick={() => setShowContactPopup(true)}
+                        className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg text-sm"
+                      >
+                        ✉️ Kontakt
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg shadow-xl p-8">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                      Wähle dein Niveau
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      {[1, 2, 3].map(cat => {
+                        const config = CATEGORY_CONFIG[cat];
+                        const count = VERBS_DATA.filter(v => v.category === cat).length;
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => handleCategorySelect(cat)}
+                            className={`p-6 bg-gradient-to-r ${config.color} hover:${config.hoverColor} text-white rounded-lg shadow-md transform transition hover:scale-105`}
+                          >
+                            <div className="text-2xl font-bold mb-1">{config.name}</div>
+                            <div className="text-sm opacity-90 mb-2">({config.levels})</div>
+                            <div className="text-sm opacity-90">{count} Verben</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Zeile 2: Alle Niveaus + 3 Boxen */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                      <button
+                        onClick={() => handleCategorySelect('ALL')}
+                        className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg shadow-md text-sm font-semibold transform transition hover:scale-105"
+                      >
+                        <div>🔀 Alle Niveaus</div>
+                        <div className="text-xs opacity-90 mt-1">({VERBS_DATA.length} Verben)</div>
+                      </button>
+                      
+                      <button
+                        onClick={() => handleCategorySelect('LEARNED')}
+                        className="p-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg shadow-md text-sm font-semibold transform transition hover:scale-105"
+                      >
+                        <div>✅ Meister-Box</div>
+                        <div className="text-xs opacity-90 mt-1">({learnedCount} Verben)</div>
+                      </button>
+                      
+                      <button
+                        onClick={() => handleCategorySelect('TRAINING')}
+                        className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-lg shadow-md text-sm font-semibold transform transition hover:scale-105"
+                      >
+                        <div>⚠️ Trainings-Box</div>
+                        <div className="text-xs opacity-90 mt-1">({mediumVerbs.size} Verben)</div>
+                      </button>
+                      
+                      <button
+                        onClick={() => handleCategorySelect('FOCUS')}
+                        className="p-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-md text-sm font-semibold transform transition hover:scale-105"
+                      >
+                        <div>🎯 Fokus-Box</div>
+                        <div className="text-xs opacity-90 mt-1">({difficultVerbs.size} Verben)</div>
+                      </button>
+                    </div>
+
+                    <div className="mt-6">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Verb suchen... (ENTER drücken)"
+                          className="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && searchTerm) {
+                              if (!selectedCategory) handleCategorySelect('ALL', true);
+                            }
+                          }}
+                        />
+                        <span className="absolute right-4 top-3 text-2xl">🔍</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {showContactPopup && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowContactPopup(false)}>
+                    <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md" onClick={e => e.stopPropagation()}>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-4">✉️ Kontakt & Feedback</h2>
+                      <div className="space-y-2 text-gray-700">
+                        <p><strong>Entwickler:</strong> Gerhard Härle</p>
+                        <p><strong>Email:</strong> <a href="mailto:haerlehd@gmail.com" className="text-blue-600 hover:underline">haerlehd@gmail.com</a></p>
+                        <div className="bg-blue-50 p-4 rounded-lg mt-4">
+                          <p className="text-sm">Ich freue mich über:</p>
+                          <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                            <li>Feedback zur App</li>
+                            <li>Verbesserungsvorschläge</li>
+                            <li>Vorschläge für neue Verben</li>
+                            <li>Fehlerberichte</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowContactPopup(false)}
+                        className="mt-6 w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold"
+                      >
+                        Schließen
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {showInstructionsPopup && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowInstructionsPopup(false)}>
+                    <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                      <h2 className="text-3xl font-bold text-gray-800 mb-4">So lernst du mit VerbMeister</h2>
+                      <div className="space-y-4 text-gray-700">
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">Lernkarten-System:</h3>
+                          <p><strong>Vorderseite:</strong> Verb im Infinitiv → Überlege dir die richtigen Formen für die 3. Person Singular und schreibe sie auf</p>
+                          <p className="mt-2"><strong>Rückseite:</strong> Hier findest du:</p>
+                          <ul className="list-disc list-inside ml-4 space-y-1">
+                            <li>die Zeitformen (3. Person Singular: Präsens – Präteritum – Perfekt)</li>
+                            <li>Bei einigen Verben: die Sonderform des Imperativs Singular</li>
+                            <li>die Bedeutungen des Verbs</li>
+                            <li>Ergänzungen (Objektbezüge)</li>
+                            <li>Beispielsätze für den Gebrauch</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">Dein Lernfortschritt:</h3>
+                          <p>Markiere jede Karte nach dem Lernen:</p>
+                          <ul className="list-disc list-inside ml-4 space-y-1">
+                            <li>✅ "Kann ich gut" → Karte wird in der Box archiviert (bleibt über Suche auffindbar)</li>
+                            <li>⚠️ "Bin noch unsicher" → Karte kommt gelegentlich wieder</li>
+                            <li>❌ "Das kann ich noch nicht" → Karte wird häufiger wiederholt</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">Navigation:</h3>
+                          <ul className="list-disc list-inside ml-4 space-y-1">
+                            <li>Mit "weiter" und "zurück" durch die Karten blättern</li>
+                            <li>Mit der Suche kannst du alle Verben und Zeitformen in der App finden</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowInstructionsPopup(false)}
+                        className="mt-6 w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold"
+                      >
+                        Verstanden!
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {showPrefixPopup && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowPrefixPopup(false)}>
+                    <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-4">ℹ️ Verben mit Vorsilben</h2>
+                      <div className="space-y-4 text-gray-700">
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">Verben mit Vorsilben (Komposita):</h3>
+                          <p>Die Zeitformen gelten auch für die zusammengesetzten Formen des Verbs:</p>
+                          <p className="mt-2"><strong>Beispiel:</strong> bringen → bringt, brachte, hat gebracht</p>
+                          <p className="ml-4">Kompositum: <u>weg</u>bringen → er/sie/es bringt weg, brachte weg, hat weggebracht</p>
+                          <p className="ml-4">Kompositum: voll<u>brin</u>gen → er/sie/es vollbringt, vollbrachte, hat vollbracht</p>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">TRENNBAR (Betonung auf Vorsilbe / Präfix):</h3>
+                          <p><strong>Immer trennbar:</strong> ab-, an-, auf-, aus-, bei-, ein-, mit-, nach-, vor-, weg-, zu-, zurück-</p>
+                          <p className="mt-2"><strong>Beispiel:</strong> <u>auf</u>stehen → er steht <u>auf</u>, stand <u>auf</u>, ist <u>auf</u>gestanden</p>
+                          <p className="mt-2"><strong>Manchmal trennbar:</strong> durch-, über-, um-, unter-, wider-, wieder- (Die trennbare und untrennbare Form haben unterschiedliche Bedeutungen)</p>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg mb-2">UNTRENNBAR (Betonung auf Wortstamm):</h3>
+                          <p><strong>Immer untrennbar:</strong> be-, emp-, ent-, er-, ge-, miss-, ver-, zer-</p>
+                          <p className="mt-2"><strong>Beispiel:</strong> ver<u>ste</u>hen → er ver<u>steht</u>, ver<u>stand</u>, hat ver<u>stan</u>den</p>
+                        </div>
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <p className="font-bold">💡 Tipp:</p>
+                          <p>Übe die Betonung – lies laut – übertreibe – höre!</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowPrefixPopup(false)}
+                        className="mt-6 w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold"
+                      >
+                        Verstanden!
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-4">
+              {showPopup && popupMessage && (
+                <div className="fixed top-4 left-1/2 z-50 popup-animate" style={{transform: 'translateX(-50%)'}}>
+                  <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md relative">
+                    <button
+                      onClick={() => setShowPopup(false)}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100"
+                      aria-label="Schließen"
+                    >
+                      ✕
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <div className="text-4xl">⭐</div>
+                      <div className="pr-6">
+                        <div className="font-bold text-xl text-gray-800">{popupMessage.title}</div>
+                        <div className="text-gray-600 text-[17px]" dangerouslySetInnerHTML={{__html: popupMessage.message}}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="px-4 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100"
+                  >
+                    ← Zurück
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    {(selectedCategory === 'LEARNED' || selectedCategory === 'TRAINING' || selectedCategory === 'FOCUS') && (
+                      <button
+                        onClick={() => {
+                          setDeleteTarget(selectedCategory);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 text-sm"
+                      >
+                        🗑️ Box leeren
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setShowContactPopup(true)}
+                      className="px-3 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100 text-sm"
+                    >
+                      ✉️
+                    </button>
+                  </div>
+                  
+                  <button
+                    onClick={resetProgress}
+                    className="px-4 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100"
+                  >
+                    🔄 Statistik zurücksetzen
+                  </button>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-xl p-4 mb-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Verb suchen..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentIndex(0);
+                        setIsFlipped(false);
+                      }}
+                      className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => {
+                          setSearchTerm('');
+                          setCurrentIndex(0);
+                          setIsFlipped(false);
+                        }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xl"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-xl p-6 mb-4">
+                  <div className="grid grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{stats.bearbeitet}/{stats.total}</div>
+                      <div className="text-sm text-gray-600">Bearbeitet</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{stats.good}</div>
+                      <div className="text-sm text-gray-600">✅ Gut</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-yellow-600">{stats.medium}</div>
+                      <div className="text-sm text-gray-600">⚠️ Unsicher</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-red-600">{stats.difficult}</div>
+                      <div className="text-sm text-gray-600">🎯 Schwierig</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {!currentVerb && searchedVerbs.length === 0 && (selectedCategory === 'LEARNED' || selectedCategory === 'TRAINING' || selectedCategory === 'FOCUS') && (
+                  <div className="bg-blue-50 rounded-lg p-8 text-center">
+                    <div className="text-4xl mb-4">📭</div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Diese Box ist leer</h3>
+                    <p className="text-gray-600">
+                      {selectedCategory === 'LEARNED' && 'Bewerte Verben mit "Gut gekonnt", um sie in die Meister-Box zu bringen!'}
+                      {selectedCategory === 'TRAINING' && 'Bewerte Verben mit "Bin unsicher", um sie in die Trainings-Box zu bringen!'}
+                      {selectedCategory === 'FOCUS' && 'Bewerte Verben mit "Nicht gekonnt", um sie in die Fokus-Box zu bringen!'}
+                    </p>
+                  </div>
+                )}
+                
+                {currentVerb && (
+                  <div className="bg-white rounded-lg shadow-xl p-8 card-main-container">
+                    <div className="flex justify-between items-center mb-6">
+                      <button
+                        onClick={goToPrevious}
+                        disabled={currentIndex === 0}
+                        className="p-2 bg-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-300"
+                      >
+                        ◀ Zurück
+                      </button>
+                      
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 mb-1">
+                          Verb {currentIndex + 1} von {searchedVerbs.length}
+                        </div>
+                        <div className="w-48 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-500 h-2 rounded-full transition-all"
+                            style={{ width: `${((currentIndex + 1) / searchedVerbs.length) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={goToNext}
+                        disabled={currentIndex === searchedVerbs.length - 1}
+                        className="p-2 bg-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-300"
+                      >
+                        Weiter ▶
+                      </button>
+                    </div>
+                    
+                    <div className={`flip-card ${isFlipped ? 'flipped' : ''}`}>
+                      <div className="flip-card-inner">
+                        <div className="flip-card-front" onClick={() => !isFlipped && setIsFlipped(true)}>
+                          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-12 cursor-pointer min-h-[400px] flex flex-col items-center border-4 border-blue-200">
+                            <div className="flex-1 flex flex-col justify-center items-center">
+                              <h2 className="text-6xl font-bold text-gray-800 mb-2" dangerouslySetInnerHTML={{__html: currentVerb.infinitive.replace(/\s*\([^)]+\)\s*$/, '')}}></h2>
+                              {currentVerb.infinitive.match(/\(([^)]+)\)/) && (
+                                <div className="text-xl text-gray-600 mb-6">
+                                  {currentVerb.infinitive.match(/\(([^)]+)\)/)[1]}
+                                </div>
+                              )}
+                              <div className="text-lg text-gray-700 text-center max-w-md leading-relaxed">
+                                Bilde die Zeitformen in der 3. Person Singular, schreibe sie auf und prüfe sie auf der Rückseite
+                              </div>
+                            </div>
+                            <div className="mt-8 text-gray-500 text-xl cursor-pointer hover:scale-110 transition-transform">
+                              👆 KLICK
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flip-card-back">
+                          <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-lg p-3 pb-1 min-h-[400px] border-4 border-green-200">
+                            <div className="text-center mb-4">
+                              <div className="flex items-center justify-center gap-3">
+                                <h3 className="text-3xl font-bold text-gray-800" dangerouslySetInnerHTML={{__html: currentVerb.infinitive}}></h3>
+                                {(selectedCategory === 'ALL' || selectedCategory === 'LEARNED') && (
+                                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${LEVEL_COLORS[currentVerb.level]}`}>
+                                    {currentVerb.level}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <div className="bg-white bg-opacity-70 rounded-lg p-3">
+                                <div className="text-lg font-medium leading-tight" dangerouslySetInnerHTML={{__html: currentVerb.forms}}></div>
+                              </div>
+                              
+                              {currentVerb.imperativ && (
+                                <div className="bg-white bg-opacity-70 rounded-lg p-3" style={{marginTop: '-6px'}}>
+                                  <div style={{color: '#4B5563', fontSize: '15px'}}>
+                                    ❗ Imperativ Singular: <strong dangerouslySetInnerHTML={{__html: currentVerb.imperativ}}></strong>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="bg-white bg-opacity-70 rounded-lg p-3">
+                                <div className="font-semibold text-gray-700 mb-1 text-sm">Bedeutung:</div>
+                                <div className="text-[17px] leading-tight" dangerouslySetInnerHTML={{__html: currentVerb.bedeutung}}></div>
+                              </div>
+                              
+                              {currentVerb.ergaenzungen && (
+                                <div className="bg-white bg-opacity-70 rounded-lg p-3">
+                                  <div className="font-semibold text-gray-700 mb-1 text-sm">Ergänzungen:</div>
+                                  <div className="text-[17px] leading-tight" dangerouslySetInnerHTML={{__html: currentVerb.ergaenzungen}}></div>
+                                </div>
+                              )}
+                              
+                              {currentVerb.beispiele && (
+                                <div className="bg-blue-100 bg-opacity-70 rounded-lg p-3">
+                                  <div className="font-semibold text-gray-700 mb-1 text-sm">Beispiele:</div>
+                                  <div className="italic text-[17px] leading-tight" dangerouslySetInnerHTML={{__html: currentVerb.beispiele}}></div>
+                                </div>
+                              )}
+                              
+                              {currentVerb.hinweis && (
+                                <div className="bg-yellow-100 border-l-4 border-yellow-400 p-3 rounded">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-yellow-600 text-[17px] flex-shrink-0">⚠️</span>
+                                    <div className="text-sm text-yellow-800 leading-tight">
+                                      <span dangerouslySetInnerHTML={{__html: currentVerb.hinweis}}></span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {isFlipped && (
+                      <div className="mt-6 button-container-fixed" style={{marginBottom: '32px'}}>
+                        <div className="text-center text-gray-700 font-semibold mb-3 text-[17px]">
+                          Wie gut kannst du dieses Verb?
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRating('good'); }}
+                            className="p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transform transition hover:scale-105 text-sm response-button"
+                          >
+                            ✅ Kann ich gut
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRating('medium'); }}
+                            className="p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transform transition hover:scale-105 text-sm response-button"
+                          >
+                            ⚠️ Bin noch unsicher
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRating('difficult'); }}
+                            className="p-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transform transition hover:scale-105 text-sm response-button"
+                          >
+                            ❌ Das kann ich noch nicht
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {showDeleteConfirm && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md">
+                      <h2 className="text-xl font-bold text-gray-800 mb-3">Box leeren?</h2>
+                      <p className="text-gray-700 mb-6">
+                        Möchtest du wirklich alle Verben aus dieser Box entfernen?
+                      </p>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            if (deleteTarget === 'LEARNED') {
+                              setLearnedVerbsSet(new Set());
+                              setGoodVerbs(new Set());
+                              localStorage.setItem('verbmeister_learned', JSON.stringify([]));
+                              localStorage.setItem('verbmeister_good', JSON.stringify([]));
+                            } else if (deleteTarget === 'TRAINING') {
+                              setMediumVerbs(new Set());
+                              localStorage.setItem('verbmeister_medium', JSON.stringify([]));
+                            } else if (deleteTarget === 'FOCUS') {
+                              setDifficultVerbs(new Set());
+                              setVerbAttempts({});
+                              localStorage.setItem('verbmeister_difficult', JSON.stringify([]));
+                              localStorage.setItem('verbmeister_attempts', JSON.stringify({}));
+                            }
+                            setShowDeleteConfirm(false);
+                            setDeleteTarget(null);
+                            setSelectedCategory(null);
+                          }}
+                          className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold"
+                        >
+                          Ja, leeren
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowDeleteConfirm(false);
+                            setDeleteTarget(null);
+                          }}
+                          className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold"
+                        >
+                          Abbrechen
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {showContactPopup && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowContactPopup(false)}>
+                    <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md" onClick={e => e.stopPropagation()}>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-4">✉️ Kontakt & Feedback</h2>
+                      <div className="space-y-2 text-gray-700">
+                        <p><strong>Entwickler:</strong> Gerhard Härle</p>
+                        <p><strong>Email:</strong> <a href="mailto:haerlehd@gmail.com" className="text-blue-600 hover:underline">haerlehd@gmail.com</a></p>
+                        <div className="bg-blue-50 p-4 rounded-lg mt-4">
+                          <p className="text-sm">Ich freue mich über:</p>
+                          <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                            <li>Feedback zur App</li>
+                            <li>Fehlerberichte</li>
+                            <li>Verbesserungsvorschläge</li>
+                            <li>Neue Verben-Vorschläge</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowContactPopup(false)}
+                        className="mt-6 w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold"
+                      >
+                        Schließen
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<VerbMeister />);
+    </script>
+
+        <!-- MIT License Footer -->
+        <div style="text-align: center; padding: 20px; background: #f3f4f6; border-top: 1px solid #e5e7eb; margin-top: 40px; font-size: 0.875rem; color: #6b7280;">
+          <p style="margin: 0 0 8px 0;">VerbMeister Beta-11.5 © 2025 Gerhard Härle</p>
+          <p style="margin: 0;">
+            <a href="#" onclick="alert('MIT-Lizenz\n\nCopyright (c) 2025 Gerhard Härle\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \'Software\'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \'AS IS\', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'); return false;" style="color: #3b82f6; text-decoration: none;">MIT-Lizenz</a>
+            • Open Source
+          </p>
+        </div>
+      </body>
+</html>
