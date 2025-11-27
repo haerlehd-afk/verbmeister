@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VerbMeister Beta-11.16-FINAL Mobile</title>
+    <title>VerbMeister Release 1.0 Mobile</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><defs><linearGradient id=%22bg%22 x1=%220%25%22 y1=%220%25%22 x2=%220%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%233A7BD5%22/><stop offset=%22100%25%22 style=%22stop-color:%232C5F8D%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23bg)%22 rx=%2220%22/><rect x=%2235%22 y=%22145%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.25%22 rx=%222%22/><rect x=%2258%22 y=%22122%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.4%22 rx=%222%22/><rect x=%2281%22 y=%2299%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.55%22 rx=%222%22/><rect x=%22104%22 y=%2276%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.7%22 rx=%222%22/><rect x=%22127%22 y=%2253%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.85%22 rx=%222%22/><text x=%22100%22 y=%22170%22 font-family=%22Arial%22 font-size=%2272%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 opacity=%220.95%22>V</text></svg>" type="image/svg+xml">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -2663,6 +2663,25 @@
             setStats(newStats);
           }, [goodVerbs, mediumVerbs, difficultVerbs, learnedVerbsSet, selectedCategory]);
           
+          // Navigation korrigieren wenn Verb aus Box entfernt wurde
+          useEffect(() => {
+            // Nur in Box-Ansichten (LEARNED, TRAINING, FOCUS)
+            if (selectedCategory === 'LEARNED' || selectedCategory === 'TRAINING' || selectedCategory === 'FOCUS') {
+              // Berechne aktuelle searchedVerbs für diese Box
+              const currentBoxVerbs = selectedCategory === 'LEARNED'
+                ? VERBS_DATA.filter(v => learnedVerbsSet.has(v.infinitive))
+                : selectedCategory === 'TRAINING'
+                  ? VERBS_DATA.filter(v => mediumVerbs.has(v.infinitive))
+                  : VERBS_DATA.filter(v => difficultVerbs.has(v.infinitive));
+              
+              // Wenn currentIndex außerhalb der Box ist, korrigieren
+              if (currentIndex >= currentBoxVerbs.length && currentBoxVerbs.length > 0) {
+                setCurrentIndex(currentBoxVerbs.length - 1);
+                setIsFlipped(false);
+              }
+            }
+          }, [goodVerbs, mediumVerbs, difficultVerbs, learnedVerbsSet, selectedCategory, currentIndex]);
+          
           const searchedVerbs = searchTerm
             ? VERBS_DATA.filter(v => {
                 const stripHTML = (str) => str.replace(/<[^>]*>/g, '');
@@ -2836,8 +2855,15 @@
                 setCurrentIndex(indexInCategory);
               }
               setIsFlipped(false);
-            } else if (currentIndex < searchedVerbs.length - 1) {
-              setCurrentIndex(currentIndex + 1);
+            } else if (selectedCategory !== 'LEARNED' && selectedCategory !== 'TRAINING' && selectedCategory !== 'FOCUS') {
+              // Nur in normalen Kategorien automatisch weiter
+              // In Boxen macht das der useEffect (nach State-Update!)
+              if (currentIndex < searchedVerbs.length - 1) {
+                setCurrentIndex(currentIndex + 1);
+                setIsFlipped(false);
+              }
+            } else {
+              // In Boxen: nur Flip zurücksetzen, Navigation macht useEffect
               setIsFlipped(false);
             }
             
@@ -2961,7 +2987,7 @@
                     </div>
                     <h1 className="text-5xl font-bold text-white mb-2">VerbMeister</h1>
                     <p className="text-xl text-white opacity-90">Lernkarten-App für Deutschlernende</p>
-                    <p className="text-sm text-white opacity-75 mt-2">Starke und unregelmäßige Verben A1 bis C1 • Beta-11.16-FINAL</p>
+                    <p className="text-sm text-white opacity-75 mt-2">Starke und unregelmäßige Verben A1 bis C1 • Release 1.0</p>
                     <div className="mt-4 space-x-2">
                       <button
                         onClick={() => setShowWelcomePopup(true)}
@@ -3528,7 +3554,7 @@
 
         <!-- MIT License Footer -->
         <div style="text-align: center; padding: 20px; background: #f3f4f6; border-top: 1px solid #e5e7eb; margin-top: 40px; font-size: 0.875rem; color: #6b7280;">
-          <p style="margin: 0 0 8px 0;">VerbMeister Beta-11.16-FINAL © 2025 Gerhard Härle</p>
+          <p style="margin: 0 0 8px 0;">VerbMeister Release 1.0 © 2025 Gerhard Härle</p>
           <p style="margin: 0;">
             <a href="#" onclick="alert('MIT-Lizenz\n\nCopyright (c) 2025 Gerhard Härle\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \'Software\'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \'AS IS\', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'); return false;" style="color: #3b82f6; text-decoration: none;">MIT-Lizenz</a>
             • Open Source
