@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VerbMeister Release 1.0 Mobile</title>
+    <title>VerbMeister Release 1.0.3 Mobile</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><defs><linearGradient id=%22bg%22 x1=%220%25%22 y1=%220%25%22 x2=%220%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%233A7BD5%22/><stop offset=%22100%25%22 style=%22stop-color:%232C5F8D%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23bg)%22 rx=%2220%22/><rect x=%2235%22 y=%22145%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.25%22 rx=%222%22/><rect x=%2258%22 y=%22122%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.4%22 rx=%222%22/><rect x=%2281%22 y=%2299%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.55%22 rx=%222%22/><rect x=%22104%22 y=%2276%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.7%22 rx=%222%22/><rect x=%22127%22 y=%2253%22 width=%2232%22 height=%2218%22 fill=%22white%22 opacity=%220.85%22 rx=%222%22/><text x=%22100%22 y=%22170%22 font-family=%22Arial%22 font-size=%2272%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 opacity=%220.95%22>V</text></svg>" type="image/svg+xml">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -2689,7 +2689,7 @@
                        stripHTML(v.forms).toLowerCase().includes(searchTerm.toLowerCase());
               })
             : (selectedCategory === 'ALL'
-                ? randomizedVerbs
+                ? randomizedVerbs.filter(v => !learnedVerbsSet.has(v.infinitive))  // Gelernte rausfiltern bei "Alle Niveaus"
                 : selectedCategory === 'LEARNED'
                   ? VERBS_DATA.filter(v => learnedVerbsSet.has(v.infinitive))
                   : selectedCategory === 'TRAINING'
@@ -2697,7 +2697,7 @@
                     : selectedCategory === 'FOCUS'
                       ? VERBS_DATA.filter(v => difficultVerbs.has(v.infinitive))
                       : (selectedCategory 
-                          ? VERBS_DATA.filter(v => v.category === selectedCategory)
+                          ? VERBS_DATA.filter(v => v.category === selectedCategory && !learnedVerbsSet.has(v.infinitive))  // Gelernte rausfiltern bei normalen Kategorien
                           : VERBS_DATA));
           
           const currentVerb = searchedVerbs[currentIndex];
@@ -2936,23 +2936,23 @@
               <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-4">
                 {showWelcomePopup && (
                   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <h2 className="text-3xl font-bold text-gray-800 mb-4">Willkommen bei VerbMeister</h2>
+                    <div className="bg-white rounded-lg shadow-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Willkommen bei VerbMeister</h2>
                       <div className="space-y-4 text-gray-700">
                         <div>
-                          <h3 className="font-bold text-lg mb-2">Was ist VerbMeister?</h3>
+                          <h3 className="font-bold text-base sm:text-lg mb-2">Was ist VerbMeister?</h3>
                           <p>Diese App hilft dir, wichtige unregelmäßige und starke Verben im Deutschen zu lernen – vom Basis- bis zum Fortgeschrittenen-Niveau (A1-C1). Die Sammlung der Verben wird noch erweitert.</p>
                         </div>
                         <div>
-                          <h3 className="font-bold text-lg mb-2">Wie funktioniert die App?</h3>
+                          <h3 className="font-bold text-base sm:text-lg mb-2">Wie funktioniert die App?</h3>
                           <ul className="list-disc list-inside space-y-1">
                             <li>Die App ist Open Source (MIT-Lizenz), kostenlos und du kannst sie mit anderen teilen</li>
                             <li>Erstellt mit Claude AI von Gerhard Härle (Kontakt: <a href="mailto:haerlehd@gmail.com" className="text-blue-600 hover:underline">haerlehd@gmail.com</a>)</li>
-                            <li>Für die erweiterten Funktionen zum Lernfortschritt: <a href="https://claude.ai" target="_blank" class="text-blue-600 hover:underline">kostenloses Konto bei Claude einrichten</a></li>
+                            <li>Alle Funktionen sind ohne Anmeldung oder Installation nutzbar – dein Lernfortschritt wird lokal in deinem Browser gespeichert</li>
                           </ul>
                         </div>
                         <div className="bg-blue-50 p-4 rounded-lg">
-                          <h3 className="font-bold text-lg mb-2">Fragen, Anregungen oder Fehler?</h3>
+                          <h3 className="font-bold text-base sm:text-lg mb-2">Fragen, Anregungen oder Fehler?</h3>
                           <p>Schreib mir gerne an <a href="mailto:haerlehd@gmail.com" className="text-blue-600 hover:underline">haerlehd@gmail.com</a> – ich freue mich über Rückmeldungen!</p>
                         </div>
                       </div>
@@ -2987,7 +2987,7 @@
                     </div>
                     <h1 className="text-5xl font-bold text-white mb-2">VerbMeister</h1>
                     <p className="text-xl text-white opacity-90">Lernkarten-App für Deutschlernende</p>
-                    <p className="text-sm text-white opacity-75 mt-2">Starke und unregelmäßige Verben A1 bis C1 • Release 1.0</p>
+                    <p className="text-sm text-white opacity-75 mt-2">Starke und unregelmäßige Verben A1 bis C1 • Release 1.0.3</p>
                     <div className="mt-4 space-x-2">
                       <button
                         onClick={() => setShowWelcomePopup(true)}
@@ -3230,10 +3230,10 @@
               )}
               
               <div className="max-w-4xl mx-auto">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 gap-2">
                   <button
                     onClick={() => setSelectedCategory(null)}
-                    className="px-4 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100"
+                    className="px-3 sm:px-4 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100 text-sm sm:text-base"
                   >
                     ← Zurück
                   </button>
@@ -3245,14 +3245,14 @@
                           setDeleteTarget(selectedCategory);
                           setShowDeleteConfirm(true);
                         }}
-                        className="px-3 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 text-sm"
+                        className="px-2 sm:px-3 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 text-xs sm:text-sm"
                       >
                         🗑️ Box leeren
                       </button>
                     )}
                     <button
                       onClick={() => setShowContactPopup(true)}
-                      className="px-3 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100 text-sm"
+                      className="px-2 sm:px-3 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100 text-sm"
                     >
                       ✉️
                     </button>
@@ -3260,7 +3260,7 @@
                   
                   <button
                     onClick={resetProgress}
-                    className="px-4 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100"
+                    className="px-3 sm:px-4 py-2 bg-white text-blue-600 rounded-lg shadow-md hover:bg-gray-100 text-xs sm:text-base whitespace-nowrap"
                   >
                     🔄 Statistik zurücksetzen
                   </button>
@@ -3294,23 +3294,23 @@
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow-xl p-6 mb-4">
-                  <div className="grid grid-cols-4 gap-4 text-center">
+                <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 mb-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{stats.bearbeitet}/{stats.total}</div>
-                      <div className="text-sm text-gray-600">Bearbeitet / Zu üben</div>
+                      <div className="text-xl sm:text-2xl font-bold text-gray-800">{stats.bearbeitet}/{stats.total}</div>
+                      <div className="text-xs sm:text-sm text-gray-600">Bearbeitet / Zu üben</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-green-600">{stats.good}</div>
-                      <div className="text-sm text-gray-600">✅ Gut</div>
+                      <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.good}</div>
+                      <div className="text-xs sm:text-sm text-gray-600">✅ Gut</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-yellow-600">{stats.medium}</div>
-                      <div className="text-sm text-gray-600">⚠️ Unsicher</div>
+                      <div className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.medium}</div>
+                      <div className="text-xs sm:text-sm text-gray-600">⚠️ Unsicher</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-red-600">{stats.difficult}</div>
-                      <div className="text-sm text-gray-600">🎯 Schwierig</div>
+                      <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.difficult}</div>
+                      <div className="text-xs sm:text-sm text-gray-600">🎯 Schwierig</div>
                     </div>
                   </div>
                 </div>
@@ -3554,7 +3554,7 @@
 
         <!-- MIT License Footer -->
         <div style="text-align: center; padding: 20px; background: #f3f4f6; border-top: 1px solid #e5e7eb; margin-top: 40px; font-size: 0.875rem; color: #6b7280;">
-          <p style="margin: 0 0 8px 0;">VerbMeister Release 1.0 © 2025 Gerhard Härle</p>
+          <p style="margin: 0 0 8px 0;">VerbMeister Release 1.0.3 © 2025 Gerhard Härle</p>
           <p style="margin: 0;">
             <a href="#" onclick="alert('MIT-Lizenz\n\nCopyright (c) 2025 Gerhard Härle\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \'Software\'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \'AS IS\', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'); return false;" style="color: #3b82f6; text-decoration: none;">MIT-Lizenz</a>
             • Open Source
